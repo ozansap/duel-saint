@@ -35,7 +35,7 @@ client.on("interactionCreate", async (interaction) => {
 		try {
 			command?.execute(interaction);
 		} catch (err) {
-			interaction.reply("There was an error trying to execute that command\nContact Swagnemite#9374 if you keep getting this error");
+			interaction.reply("There was an error trying to execute that command\nContact `swagnemite.` if you keep getting this error");
 		}
 	} else if (interaction.isButton()) {
 		if (Duel.list.has(interaction.message.id)) {
