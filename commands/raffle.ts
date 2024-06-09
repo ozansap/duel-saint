@@ -45,8 +45,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		content += `${user} `;
 	}
 
-	const reply = new Reply({ title, description });
-	interaction.reply(Object.assign({ content }, reply.visible()));
+	const reply = new Reply({ title, description }).setContent(content);
+	interaction.reply(reply.visible());
 };
 
 module.exports = {

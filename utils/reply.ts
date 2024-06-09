@@ -1,14 +1,14 @@
-import { ActionRowBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedAuthorOptions, EmbedBuilder, EmbedFooterOptions, InteractionResponse, MessageActionRowComponentBuilder } from "discord.js";
+import { ActionRowBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedAuthorOptions, EmbedBuilder, EmbedFooterOptions, InteractionReplyOptions, InteractionResponse, MessageActionRowComponentBuilder } from "discord.js";
 import { colors } from "./vars";
 
 export class Reply {
-	message: BaseMessageOptions;
+	content: string | null;
+	embeds: EmbedBuilder[];
 	components: ActionRowBuilder[];
-	embeds: EmbedOptions[];
 
 	constructor(options?: EmbedOptions) {
+		this.content = null;
 		this.embeds = [];
-		this.message = {};
 		this.components = [];
 
 		if (options) this.addEmbed(options);
@@ -76,50 +76,53 @@ export class Reply {
 	}
 
 	addEmbed(options: EmbedOptions): Reply {
-		if (!options.color) options.color = colors.default;
-		this.embeds.push(options);
+		options.color = options.color ?? colors.default;
+		this.embeds.push(formEmbed(options));
 		return this;
 	}
 
 	removeComponents() {
-		this.message.components = [];
+		this.components = [];
 		return this;
 	}
 
 	addComponents(components: MessageActionRowComponentBuilder[]) {
-		this.message.components = this.message.components ?? [];
+		this.components = this.components ?? [];
 		const row = new ActionRowBuilder<(typeof components)[0]>();
 
 		for (const component of components) {
 			row.addComponents(component);
 		}
 
-		this.message.components.push(row);
+		this.components.push(row);
 		return this;
 	}
 
-	visible() {
-		if (this.embeds.length) {
-			this.message.embeds = [];
+	setContent(content: string) {
+		this.content = content;
+		return this;
+	}
 
-			for (const embedOptions of this.embeds) {
-				this.message.embeds.push(formEmbed(embedOptions));
-			}
-		}
+	visible(): BaseMessageOptions {
+		let message: BaseMessageOptions = {}
 
-		return this.message;
+		// @ts-ignore
+		message.components = this.components;
+		if (this.content) message.content = this.content;
+		if (this.embeds.length) message.embeds = this.embeds;
+
+		return message;
 	}
 
 	ephemeral() {
-		if (this.embeds.length) {
-			this.message.embeds = [];
+		let message: InteractionReplyOptions = { ephemeral: true }
 
-			for (const embedOptions of this.embeds) {
-				this.message.embeds.push(formEmbed(embedOptions));
-			}
-		}
+		// @ts-ignore
+		message.components = this.components;
+		if (this.content) message.content = this.content;
+		if (this.embeds.length) message.embeds = this.embeds;
 
-		return Object.assign({}, this.message, { ephemeral: true });
+		return message;
 	}
 }
 

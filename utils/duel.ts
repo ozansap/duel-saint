@@ -186,8 +186,8 @@ export class Duel {
 		const button2 = new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Secondary).setCustomId("cancel");
 
 		const options = { author: this.rematchAuthor(), title, description, fields };
-		const reply = new Reply(options).addComponents([button1, button2]);
-		await interaction.reply(Object.assign({ content: `${target}` }, reply.visible()));
+		const reply = new Reply(options).setContent(target.toString()).addComponents([button1, button2]);
+		await interaction.reply(reply.visible());
 		const message = await interaction.fetchReply();
 		this.register(message);
 	}
@@ -462,8 +462,8 @@ export class Duel {
 		const url = interaction.message.url;
 		const button1 = new ButtonBuilder().setLabel("Jump to Duel").setStyle(ButtonStyle.Link).setURL(url);
 
-		const reply = new Reply(options).addComponents([button1]);
-		channel.send(Object.assign({ content: `${user} ${target} ${modRole}` }, reply.visible()));
+		const reply = new Reply(options).setContent(`${user} ${target} ${modRole}`).addComponents([button1]);
+		channel.send(reply.visible());
 
 		return channel;
 	}
