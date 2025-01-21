@@ -3,10 +3,12 @@
 	"version": "1.0.0",
 	"description": "a discord bot",
 	"main": "app.ts",
+	"type": "module",
 	"scripts": {
 		"test": "tsc && node build/app.js",
 		"start": "rm -rf build && tsc && node build/app.js",
-		"serve": "rm -rf build && tsc && pm2 start build/app.js -n GITCG"
+		"serve": "rm -rf build && tsc && pm2 start build/app.js -n GITCG",
+		"update": "node update.js"
 	},
 	"keywords": [],
 	"author": "Swagnemite",
@@ -22,7 +24,8 @@
 		"resemblejs": "^4.1.0",
 		"sharp": "^0.33.4",
 		"simple-base-converter": "^1.0.18",
-		"typescript": "^5.4.5"
+		"typescript": "^5.4.5",
+		"webp-converter": "^2.3.3"
 	},
 	"devDependencies": {
 		"@types/humanize-duration": "^3.27.1",
