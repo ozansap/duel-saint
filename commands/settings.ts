@@ -70,7 +70,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let description = `Profile: **${types.profile[profile]}**\n` + `Duel Career: **${types.career[career]}**\n\n` + `ℹ️ Rating and Wins are always visible when duelling`;
 
 		const reply = new Reply({ title: "Profile Settings", description });
-		i.update(reply.ephemeral());
+		i.update(reply.visible());
 	});
 
 	collector.on("end", (collected) => {
