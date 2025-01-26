@@ -1,12 +1,14 @@
 import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "../utils/reply";
-import { decode, display, encode, extract } from "../utils/code";
+import { decode, encode, fromImage, toText } from "../utils/code";
 import { now } from "../utils/time";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const subcommand = interaction.options.getSubcommand(true);
 	let code = "";
 	let deckString = "";
+	let deck: number[] = [];
+	let offset = 0;
 
 	if (subcommand === "encode") {
 		const attachment = interaction.options.getAttachment("deck_image", true);
@@ -22,33 +24,20 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		const reply = new Reply({ title, description });
 		await interaction.reply(reply.visible());
 
-		const [error_extract, cardsData] = await extract(attachment.url);
-
-		if (error_extract !== null) {
-			const reply = Reply.error(error_extract);
+		let deck_maybe = await fromImage(attachment.url);
+		if (deck_maybe instanceof Error) {
+			const reply = Reply.error(deck_maybe.message);
 			return interaction.editReply(reply.ephemeral());
 		}
 
-		const [error_encode, result_encode] = encode(cardsData);
-
-		if (error_encode !== null) {
-			const reply = Reply.error(error_encode);
-			return interaction.editReply(reply.ephemeral());
-		}
-
-		code = result_encode;
-		deckString = display(cardsData);
+		deck = deck_maybe;
+		code = encode(deck);
+		deckString = toText(deck);
 	} else if (subcommand === "decode") {
 		code = interaction.options.getString("deck_code", true);
 
-		const [error_decode, cardsData] = decode(code);
-
-		if (error_decode !== null) {
-			const reply = Reply.error(error_decode);
-			return interaction.editReply(reply.ephemeral());
-		}
-
-		deckString = display(cardsData);
+		deck = decode(code);
+		deckString = toText(deck);
 	} else {
 		return;
 	}
@@ -57,13 +46,14 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	const title = lines.shift();
 	const description = lines.join("\n");
 
+	const b_offset = new ButtonBuilder().setLabel("Next").setStyle(ButtonStyle.Secondary).setCustomId("offset_next");
 	const b_code = new ButtonBuilder().setLabel("Send Code").setStyle(ButtonStyle.Secondary).setCustomId("send_code");
 
 	const reply = new Reply({ title, description, footer: { text: code } });
 	let message;
 
 	if (subcommand === "encode") {
-		message = await interaction.editReply(reply.addComponents([b_code]).visible());
+		message = await interaction.editReply(reply.addComponents([b_offset, b_code]).visible());
 	} else if (subcommand === "decode") {
 		message = await interaction.reply(reply.addComponents([b_code]).visible());
 	} else {
@@ -78,6 +68,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	collector.on("collect", async (i) => {
 		if (i.customId === "send_code") {
 			i.reply({ content: code, ephemeral: true });
+		} else if (i.customId === "offset_next") {
+			code = encode(deck, ++offset);
+			interaction.editReply(new Reply({ title, description, footer: { text: code } }).visible());
 		}
 	});
 

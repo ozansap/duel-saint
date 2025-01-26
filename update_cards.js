@@ -1,10 +1,8 @@
-import cardsJSON from './cards.json' assert { type: 'json' };
-import webp from 'webp-converter';
+import cardsJSON from './cards.json' with { type: 'json' };
 import fs from 'fs';
 
 const api_url = 'https://sg-hk4e-api-static.hoyoverse.com/event/e20221207cardlanding/v2/card_config?lang=en-us';
 const path_dir_cards = './cards';
-const path_dir_png = './temp_png';
 
 let count = 0;
 
@@ -60,21 +58,11 @@ const requests = [
 ];
 
 async function run() {
-	await prepare();
-	console.log('completed: prepare');
 	await update();
 	console.log('completed: update');
 	await download();
 	console.log('completed: download');
-	await convert();
-	console.log('completed: convert');
-	await clean();
-	console.log('completed: clean');
 	console.log(`added ${count} new cards`);
-}
-
-async function prepare() {
-	fs.mkdirSync(path_dir_png, { recursive: true });
 }
 
 async function update() {
@@ -105,26 +93,15 @@ async function download() {
 
 	for (const type of requests.map((x) => x.type)) {
 		for (const card of cardsJSON[type]) {
-			if (files.includes(`${card.id}.webp`)) continue;
+			if (files.includes(`${card.id}.png`)) continue;
 			count++;
 			const response = await fetch(card.resource);
 			const blob = await response.blob();
 			const arrayBuffer = await blob.arrayBuffer();
 			const buffer = Buffer.from(arrayBuffer);
-			await fs.writeFileSync(`${path_dir_png}/${card.id}.png`, buffer);
+			fs.writeFileSync(`${path_dir_cards}/${card.id}.png`, buffer);
 		}
 	}
-}
-
-async function convert() {
-	const pngs = fs.readdirSync(path_dir_png);
-	for (const png of pngs) {
-		await webp.cwebp(`${path_dir_png}/${png}`, `${path_dir_cards}/${png.split('.')[0]}.webp`, '-q 80');
-	}
-}
-
-async function clean() {
-	fs.rmSync(path_dir_png, { recursive: true });
 }
 
 run();

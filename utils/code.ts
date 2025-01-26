@@ -1,22 +1,14 @@
-import axios from "axios";
-import { ComparisonOptions } from "resemblejs";
-import compareImages from "resemblejs/compareImages";
 import sharp from "sharp";
-import { convertBase } from "simple-base-converter";
-import cards from "../cards.json";
+import Pixelmatch from "pixelmatch";
+import { Cards } from "./cards";
 
-// order of chars in base 62
-const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-// holds the position of cards in deck image
-// unneeded if you already know the cards in the deck
 const position = {
 	characters: [
 		{ left: 353, top: 178, width: 138, height: 236 },
 		{ left: 515, top: 178, width: 138, height: 236 },
 		{ left: 677, top: 178, width: 138, height: 236 },
 	],
-	deck: [
+	actions: [
 		{ left: 254, top: 522, width: 90, height: 154 },
 		{ left: 368, top: 522, width: 90, height: 154 },
 		{ left: 482, top: 522, width: 90, height: 154 },
@@ -106,7 +98,8 @@ export function encode(deck: number[], offset: number = 0): string {
 
 	let hex_code = hex_offset(bytes, offset).join("");
 	let buffer = Buffer.from(hex_code, 'hex');
-	return buffer.toString('base64');
+	let code = buffer.toString('base64');
+	return code;
 }
 
 export function decode(code: string): number[] {
@@ -127,7 +120,80 @@ export function decode(code: string): number[] {
 		unscrambled.push(scrambling[i].map(s => scrambled[s]).join(""));
 	}
 
-	return unscrambled.map(s => parseInt(s, 16));
+	let deck = unscrambled.map(s => parseInt(s, 16));
+	return deck;
+}
+
+export async function fromImage(url: string): Promise<number[] | Error> {
+	let response = await fetch(url);
+	let arrayBuffer = await response.arrayBuffer();
+	let characters = Cards.characters;
+	let actions = Cards.actions;
+	let deck: number[] = [];
+
+	for (const p of position.characters) {
+		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720).toBuffer();
+
+		for (let i = 0; i < characters.length; i++) {
+			let card = characters[i];
+			let img = await sharp(`../cards/${card.id}.png`).raw().toBuffer();
+
+			let diff = Pixelmatch(cropped, img, null, 420, 720, { threshold: 0.1 });
+
+			if (ratio(diff) < 0.1) {
+				deck.push(card.code);
+				break;
+			}
+		}
+	}
+
+	if (deck.length as number !== 3) {
+		return new Error("Failed to detect characters");
+	}
+
+	let index = 0;
+	for (const p of position.actions) {
+		let cropped = await sharp(arrayBuffer).extract(p).toBuffer();
+
+		for (let i = index; i < actions.length; i++) {
+			let card = actions[i];
+			let img = await sharp(`../cards/${card.id}.png`).raw().toBuffer();
+
+			let diff = Pixelmatch(cropped, img, null, 420, 720, { threshold: 0.1 });
+
+			let isFood = 333000 < card.id;
+
+			if (isFood && ratio(diff) > 0.05) continue;
+			else if (ratio(diff) > 0.08) continue;
+
+			index = i;
+			deck.push(card.code);
+			break;
+		}
+	}
+
+	if (deck.length as number !== 30) {
+		return new Error("Failed to detect actions");
+	}
+
+	return deck;
+}
+
+export function toImage() {
+
+}
+
+export function toText(deck: number[]): string {
+	let grouped: { [card: string]: number } = {}
+
+	deck.forEach(v => grouped[v] ? grouped[v]++ : grouped[v] = 1);
+	let lines = Object.entries(grouped).map(([code, count]) => {
+		let name = Cards.all.find(c => c.code === parseInt(code))?.name;
+		if (!name) throw new Error(`Card not found: ${code}`);
+		return `${count}x - ${name}`;
+	});
+
+	return lines.join("\n");
 }
 
 function hex_offset(bytes: string[], offset: number) {
@@ -138,4 +204,8 @@ function hex_offset(bytes: string[], offset: number) {
 	})
 
 	return new_bytes;
+}
+
+function ratio(diff: number) {
+	return diff / (420 * 720);
 }
