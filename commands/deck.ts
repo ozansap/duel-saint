@@ -32,12 +32,30 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 		deck = deck_maybe;
 		code = encode(deck);
-		deckString = toText(deck);
+		let deckString_maybe = toText(deck);
+		if (deckString_maybe instanceof Error) {
+			const reply = Reply.error(deckString_maybe.message);
+			return interaction.editReply(reply.ephemeral());
+		}
+
+		deckString = deckString_maybe;
 	} else if (subcommand === "decode") {
 		code = interaction.options.getString("deck_code", true);
 
-		deck = decode(code);
-		deckString = toText(deck);
+		let deck_maybe = decode(code);
+		if (deck_maybe instanceof Error) {
+			const reply = Reply.error(deck_maybe.message);
+			return interaction.editReply(reply.ephemeral());
+		}
+
+		deck = deck_maybe;
+		let deckString_maybe = toText(deck);
+		if (deckString_maybe instanceof Error) {
+			const reply = Reply.error(deckString_maybe.message);
+			return interaction.editReply(reply.ephemeral());
+		}
+
+		deckString = deckString_maybe;
 	} else {
 		return;
 	}

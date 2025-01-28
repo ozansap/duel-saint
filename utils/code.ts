@@ -102,7 +102,7 @@ export function encode(deck: number[], offset: number = 0): string {
 	return code;
 }
 
-export function decode(code: string): number[] {
+export function decode(code: string): number[] | Error {
 	let buffer = Buffer.from(code, 'base64');
 	let hex_code = buffer.toString('hex');
 
@@ -112,6 +112,8 @@ export function decode(code: string): number[] {
 		bytes.push(byte);
 	}
 
+	if (bytes.length !== 0) return new Error("This is not a valid deck code"); //TODO: what is the bytes length?
+
 	let offset = parseInt(bytes[bytes.length - 1], 16);
 	let scrambled = hex_offset(bytes, -offset).join("");
 	let unscrambled = [];
@@ -120,13 +122,23 @@ export function decode(code: string): number[] {
 		unscrambled.push(scrambling[i].map(s => scrambled[s]).join(""));
 	}
 
+	if (unscrambled.length !== 33) return new Error("This is not a valid deck code");
+
 	let deck = unscrambled.map(s => parseInt(s, 16));
 	return deck;
 }
 
 export async function fromImage(url: string): Promise<number[] | Error> {
-	let response = await fetch(url);
-	let arrayBuffer = await response.arrayBuffer();
+	let arrayBuffer;
+
+	try {
+		let response = await fetch(url);
+		arrayBuffer = await response.arrayBuffer();
+	} catch (err) {
+		console.error(err);
+		return new Error("Something went wrong");
+	}
+
 	let characters = Cards.characters;
 	let actions = Cards.actions;
 	let deck: number[] = [];
@@ -179,26 +191,32 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 	return deck;
 }
 
-export function toImage() {
+export async function toImage(deck: number[]) {
 
 }
 
-export function toText(deck: number[]): string {
+export function toText(deck: number[]): string | Error {
 	let grouped: Map<number, number> = new Map();
 	deck.forEach(v => grouped.set(v, (grouped.get(v) ?? 0) + 1));
 
 	let entries = Array.from(grouped.entries());
-	let characters = [entries.shift(), entries.shift(), entries.shift()];
-	if (characters.some(c => c === undefined)) throw new Error("Characters not found");
-	let lines = characters.map((entry) => Cards.all.find(c => c.code === entry![0])?.name).join(" - ");
+	let characters = [];
+	let text = "";
 
-	for (let [code, count] of entries) {
+	for (let [code, count] of entries.slice(0, 3)) {
 		let name = Cards.all.find(c => c.code === code)?.name;
-		if (!name) throw new Error(`Card not found: ${code}`);
-		lines += `\n${count} - ${name}`;
+		if (name === undefined) return new Error(`Could not find a card with ID: ${code}\nThis is likely because my code isn't updated yet`);
+		characters.push(name);
 	}
 
-	return lines;
+	for (let [code, count] of entries.slice(3)) {
+		let name = Cards.all.find(c => c.code === code)?.name;
+		if (name === undefined) return new Error(`Could not find a card with ID: ${code}\nThis is likely because my code isn't updated yet`);
+		text += `\n${count} - ${name}`;
+	}
+
+	text = characters.join(" - ") + text;
+	return text;
 }
 
 function hex_offset(bytes: string[], offset: number) {

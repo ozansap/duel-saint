@@ -19,7 +19,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			interaction.reply(reply.visible());
 		} catch (err: any) {
 			let description = err?.message ? `\`\`\`${err?.message}\`\`\`` : "Error";
-			const reply = new Reply({ title: "Encountered an error", description, color: colors.green });
+			const reply = new Reply({ title: "Encountered an error", description, color: colors.red });
 			interaction.reply(reply.visible());
 		}
 	} else {
