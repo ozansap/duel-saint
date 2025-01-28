@@ -45,14 +45,14 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let deck_maybe = decode(code);
 		if (deck_maybe instanceof Error) {
 			const reply = Reply.error(deck_maybe.message);
-			return interaction.editReply(reply.ephemeral());
+			return interaction.reply(reply.ephemeral());
 		}
 
 		deck = deck_maybe;
 		let deckString_maybe = toText(deck);
 		if (deckString_maybe instanceof Error) {
 			const reply = Reply.error(deckString_maybe.message);
-			return interaction.editReply(reply.ephemeral());
+			return interaction.reply(reply.ephemeral());
 		}
 
 		deckString = deckString_maybe;
@@ -88,7 +88,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			i.reply({ content: code, ephemeral: true });
 		} else if (i.customId === "offset_next") {
 			code = encode(deck, ++offset);
-			interaction.editReply(new Reply({ title, description, footer: { text: code } }).visible());
+			interaction.editReply(new Reply({ title, description, footer: { text: code } }).addComponents([b_offset, b_code]).visible());
 		}
 	});
 
