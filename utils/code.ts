@@ -144,15 +144,15 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 	let deck: number[] = [];
 
 	for (const p of position.characters) {
-		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720).ensureAlpha().raw().toBuffer();
+		let cropped = await sharp(arrayBuffer).extract(p).ensureAlpha().raw().toBuffer();
 
 		for (let i = 0; i < characters.length; i++) {
 			let card = characters[i];
-			let img = await sharp(`cards/${card.id}.png`).ensureAlpha().raw().toBuffer();
+			let img = await sharp(`cards/${card.id}.png`).resize(p.width, p.height).ensureAlpha().raw().toBuffer();
 
-			let diff = Pixelmatch(cropped, img, null, 420, 720, { threshold: 0.1 });
+			let diff = Pixelmatch(cropped, img, null, p.width, p.height, { threshold: 0.1 });
 
-			if (ratio(diff) < 0.5) {
+			if (ratio(diff, p.width, p.height) < 0.5) {
 				deck.push(card.code);
 				console.log(card.name);
 				break;
@@ -166,19 +166,20 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 
 	let index = 0;
 	for (const p of position.actions) {
-		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720).ensureAlpha().raw().toBuffer();
+		let cropped = await sharp(arrayBuffer).extract(p).ensureAlpha().raw().toBuffer();
 
 		for (let i = index; i < actions.length; i++) {
 			let card = actions[i];
-			let img = await sharp(`cards/${card.id}.png`).ensureAlpha().raw().toBuffer();
+			let img = await sharp(`cards/${card.id}.png`).resize(p.width, p.height).ensureAlpha().raw().toBuffer();
 
-			let diff = Pixelmatch(cropped, img, null, 420, 720, { threshold: 0.1 });
+			let diff = Pixelmatch(cropped, img, null, p.width, p.height, { threshold: 0.1 });
 
 			let isFood = 333000 < card.id && card.id < 334000;
 			let isItem = 323000 < card.id && card.id < 324000;
 
-			if ((isFood || isItem) && ratio(diff) > 0.2) continue;
-			else if (ratio(diff) > 0.3) continue;
+			let r = ratio(diff, p.width, p.height);
+			if ((isFood || isItem) && r > 0.2) continue;
+			else if (r > 0.3) continue;
 
 			index = i;
 			deck.push(card.code);
@@ -232,6 +233,6 @@ function hex_offset(bytes: string[], offset: number) {
 	return new_bytes;
 }
 
-function ratio(diff: number) {
-	return diff / (420 * 720);
+function ratio(diff: number, width: number, height: number) {
+	return diff / (width * height);
 }
