@@ -106,13 +106,13 @@ export function decode(code: string): number[] | Error {
 	let buffer = Buffer.from(code, 'base64');
 	let hex_code = buffer.toString('hex');
 
+	if (hex_code.length !== 102) return new Error("This is not a valid deck code");
+
 	let bytes = [];
 	for (let i = 0; i < hex_code.length; i += 2) {
 		let byte = hex_code[i] + hex_code[i + 1];
 		bytes.push(byte);
 	}
-
-	if (bytes.length !== 0) return new Error("This is not a valid deck code"); //TODO: what is the bytes length?
 
 	let offset = parseInt(bytes[bytes.length - 1], 16);
 	let scrambled = hex_offset(bytes, -offset).join("");
@@ -144,16 +144,17 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 	let deck: number[] = [];
 
 	for (const p of position.characters) {
-		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720, { fit: 'contain' }).png().toBuffer();
+		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720).ensureAlpha().raw().toBuffer();
 
 		for (let i = 0; i < characters.length; i++) {
 			let card = characters[i];
-			let img = await sharp(`cards/${card.id}.png`).resize(420, 720, { fit: "contain" }).toBuffer();
+			let img = await sharp(`cards/${card.id}.png`).ensureAlpha().raw().toBuffer();
 
 			let diff = Pixelmatch(cropped, img, null, 420, 720, { threshold: 0.1 });
 
-			if (ratio(diff) < 0.1) {
+			if (ratio(diff) < 0.5) {
 				deck.push(card.code);
+				console.log(card.name);
 				break;
 			}
 		}
@@ -165,26 +166,28 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 
 	let index = 0;
 	for (const p of position.actions) {
-		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720, { fit: 'contain' }).png().toBuffer();
+		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720).ensureAlpha().raw().toBuffer();
 
 		for (let i = index; i < actions.length; i++) {
 			let card = actions[i];
-			let img = await sharp(`cards/${card.id}.png`).resize(420, 720, { fit: "contain" }).toBuffer();
+			let img = await sharp(`cards/${card.id}.png`).ensureAlpha().raw().toBuffer();
 
 			let diff = Pixelmatch(cropped, img, null, 420, 720, { threshold: 0.1 });
 
-			let isFood = 333000 < card.id;
+			let isFood = 333000 < card.id && card.id < 334000;
+			let isItem = 323000 < card.id && card.id < 324000;
 
-			if (isFood && ratio(diff) > 0.05) continue;
-			else if (ratio(diff) > 0.08) continue;
+			if ((isFood || isItem) && ratio(diff) > 0.2) continue;
+			else if (ratio(diff) > 0.3) continue;
 
 			index = i;
 			deck.push(card.code);
+			console.log(card.name);
 			break;
 		}
 	}
 
-	if (deck.length as number !== 30) {
+	if (deck.length as number !== 33) {
 		return new Error("Failed to detect actions");
 	}
 
@@ -192,7 +195,7 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 }
 
 export async function toImage(deck: number[]) {
-
+	// 96 x 160;
 }
 
 export function toText(deck: number[]): string | Error {
