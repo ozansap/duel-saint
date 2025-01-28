@@ -132,11 +132,11 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 	let deck: number[] = [];
 
 	for (const p of position.characters) {
-		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720).toBuffer();
+		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720, { fit: 'contain' }).png().toBuffer();
 
 		for (let i = 0; i < characters.length; i++) {
 			let card = characters[i];
-			let img = await sharp(`../cards/${card.id}.png`).raw().toBuffer();
+			let img = await sharp(`cards/${card.id}.png`).resize(420, 720, { fit: "contain" }).toBuffer();
 
 			let diff = Pixelmatch(cropped, img, null, 420, 720, { threshold: 0.1 });
 
@@ -153,11 +153,11 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 
 	let index = 0;
 	for (const p of position.actions) {
-		let cropped = await sharp(arrayBuffer).extract(p).toBuffer();
+		let cropped = await sharp(arrayBuffer).extract(p).resize(420, 720, { fit: 'contain' }).png().toBuffer();
 
 		for (let i = index; i < actions.length; i++) {
 			let card = actions[i];
-			let img = await sharp(`../cards/${card.id}.png`).raw().toBuffer();
+			let img = await sharp(`cards/${card.id}.png`).resize(420, 720, { fit: "contain" }).toBuffer();
 
 			let diff = Pixelmatch(cropped, img, null, 420, 720, { threshold: 0.1 });
 
@@ -184,16 +184,21 @@ export function toImage() {
 }
 
 export function toText(deck: number[]): string {
-	let grouped: { [card: string]: number } = {}
+	let grouped: Map<number, number> = new Map();
+	deck.forEach(v => grouped.set(v, (grouped.get(v) ?? 0) + 1));
 
-	deck.forEach(v => grouped[v] ? grouped[v]++ : grouped[v] = 1);
-	let lines = Object.entries(grouped).map(([code, count]) => {
-		let name = Cards.all.find(c => c.code === parseInt(code))?.name;
+	let entries = Array.from(grouped.entries());
+	let characters = [entries.shift(), entries.shift(), entries.shift()];
+	if (characters.some(c => c === undefined)) throw new Error("Characters not found");
+	let lines = characters.map((entry) => Cards.all.find(c => c.code === entry![0])?.name).join(" - ");
+
+	for (let [code, count] of entries) {
+		let name = Cards.all.find(c => c.code === code)?.name;
 		if (!name) throw new Error(`Card not found: ${code}`);
-		return `${count}x - ${name}`;
-	});
+		lines += `\n${count} - ${name}`;
+	}
 
-	return lines.join("\n");
+	return lines;
 }
 
 function hex_offset(bytes: string[], offset: number) {
