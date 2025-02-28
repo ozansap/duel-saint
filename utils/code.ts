@@ -154,7 +154,6 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 
 			if (ratio(diff, p.width, p.height) < 0.5) {
 				deck.push(card.code);
-				console.log(card.name);
 				break;
 			}
 		}
@@ -183,7 +182,6 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 
 			index = i;
 			deck.push(card.code);
-			console.log(card.name);
 			break;
 		}
 	}
@@ -195,8 +193,30 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 	return deck;
 }
 
-export async function toImage(deck: number[]) {
-	// 96 x 160;
+export async function toImage(deck: number[]): Promise<Buffer | Error> {
+	let background = sharp("assets/background.png").raw();
+	let composite = [];
+
+	for (let i = 0; i < 3; i++) {
+		let card = Cards.all.find(c => c.code === deck[i]);
+		if (card === undefined) return new Error(`Could not find a card with code: ${deck[i]}\nThis is likely because my code isn't updated yet`);
+		let img = await sharp(`cards/${card.id}.png`).resize(position.characters[i].width, position.characters[i].height).ensureAlpha().toBuffer();
+		let border = await sharp("assets/border.png").resize(position.characters[i].width, position.characters[i].height).ensureAlpha().toBuffer();
+		composite.push({ input: img, left: position.characters[i].left, top: position.characters[i].top });
+		composite.push({ input: border, left: position.characters[i].left, top: position.characters[i].top });
+	}
+
+	for (let i = 3; i < deck.length; i++) {
+		let card = Cards.all.find(c => c.code === deck[i]);
+		if (card === undefined) return new Error(`Could not find a card with code: ${deck[i]}\nThis is likely because my code isn't updated yet`);
+		let img = await sharp(`cards/${card.id}.png`).resize(position.actions[i - 3].width, position.actions[i - 3].height).ensureAlpha().toBuffer();
+		let border = await sharp("assets/border.png").resize(position.actions[i - 3].width, position.actions[i - 3].height).ensureAlpha().toBuffer();
+		composite.push({ input: img, left: position.actions[i - 3].left, top: position.actions[i - 3].top });
+		composite.push({ input: border, left: position.actions[i - 3].left, top: position.actions[i - 3].top });
+	}
+
+	background.composite(composite);
+	return background.toBuffer();
 }
 
 export function toText(deck: number[]): string | Error {
@@ -209,13 +229,13 @@ export function toText(deck: number[]): string | Error {
 
 	for (let [code, count] of entries.slice(0, 3)) {
 		let name = Cards.all.find(c => c.code === code)?.name;
-		if (name === undefined) return new Error(`Could not find a card with ID: ${code}\nThis is likely because my code isn't updated yet`);
+		if (name === undefined) return new Error(`Could not find a card with code: ${code}\nThis is likely because my code isn't updated yet`);
 		characters.push(name);
 	}
 
 	for (let [code, count] of entries.slice(3)) {
 		let name = Cards.all.find(c => c.code === code)?.name;
-		if (name === undefined) return new Error(`Could not find a card with ID: ${code}\nThis is likely because my code isn't updated yet`);
+		if (name === undefined) return new Error(`Could not find a card with code: ${code}\nThis is likely because my code isn't updated yet`);
 		text += `\n${count} - ${name}`;
 	}
 

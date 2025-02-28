@@ -1,14 +1,16 @@
 import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "../utils/reply";
-import { decode, encode, fromImage, toText } from "../utils/code";
-import { now } from "../utils/time";
+import { decode, encode, fromImage, toImage, toText } from "../utils/code";
+import sharp from "sharp";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const subcommand = interaction.options.getSubcommand(true);
 	let code = "";
 	let deckString = "";
+	let deckImage;
 	let deck: number[] = [];
 	let offset = 0;
+	let message;
 
 	if (subcommand === "encode") {
 		const attachment = interaction.options.getAttachment("deck_image", true);
@@ -18,11 +20,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			return interaction.reply(reply.ephemeral());
 		}
 
-		const title = "Reading your deck image...";
-		const description = `This may take around 20 seconds\nStarted reading <t:${now()}:R>`;
-
-		const reply = new Reply({ title, description });
-		await interaction.reply(reply.visible());
+		await interaction.deferReply();
 
 		let deck_maybe = await fromImage(attachment.url);
 		if (deck_maybe instanceof Error) {
@@ -39,6 +37,35 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		}
 
 		deckString = deckString_maybe;
+		let lines = deckString.split("\n");
+		let title = lines.shift()!;
+		let description = lines.join("\n");
+		description += "\n\n⚠️ The deck code may not work, press `Next` until you get a working one";
+
+		let b_offset = new ButtonBuilder().setLabel("Next").setStyle(ButtonStyle.Secondary).setCustomId("offset_next");
+		let b_code = new ButtonBuilder().setLabel("See Code").setStyle(ButtonStyle.Secondary).setCustomId("see_code");
+
+		let reply = new Reply({ title, description, footer: { text: code } });
+		message = await interaction.editReply(reply.addComponents([b_offset, b_code]).visible());
+
+		const collector = message.createMessageComponentCollector({
+			componentType: ComponentType.Button,
+			time: 300000,
+		});
+
+		collector.on("collect", async (i) => {
+			if (i.customId === "see_code") {
+				i.reply({ content: code, ephemeral: true });
+			} else if (i.customId === "offset_next") {
+				code = encode(deck, ++offset);
+				i.update(new Reply({ title, description, footer: { text: code } }).addComponents([b_offset, b_code]).visible());
+			}
+		});
+
+		collector.on("end", (collected) => {
+			interaction.editReply(new Reply().removeComponents().visible());
+		});
+
 	} else if (subcommand === "decode") {
 		code = interaction.options.getString("deck_code", true);
 
@@ -48,53 +75,22 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			return interaction.reply(reply.ephemeral());
 		}
 
+		await interaction.deferReply();
+
 		deck = deck_maybe;
-		let deckString_maybe = toText(deck);
-		if (deckString_maybe instanceof Error) {
-			const reply = Reply.error(deckString_maybe.message);
-			return interaction.reply(reply.ephemeral());
+		let image_maybe = await toImage(deck);
+		if (image_maybe instanceof Error) {
+			const reply = Reply.error(image_maybe.message);
+			return interaction.editReply(reply.ephemeral());
 		}
 
-		deckString = deckString_maybe;
+		deckImage = image_maybe;
+		await sharp(deckImage, { raw: { width: 1200, height: 1630, channels: 4 } }).png().toFile("new.png");
+		// let reply = new Reply({ footer: { text: code } }).attachImage(deckImage).visible();
+		message = await interaction.editReply({ files: ["new.png"], embeds: [{ image: { url: "attachment://new.png" } }] });
 	} else {
 		return;
 	}
-
-	const lines = deckString.split("\n");
-	const title = lines.shift();
-	const description = lines.join("\n");
-
-	const b_offset = new ButtonBuilder().setLabel("Next").setStyle(ButtonStyle.Secondary).setCustomId("offset_next");
-	const b_code = new ButtonBuilder().setLabel("Send Code").setStyle(ButtonStyle.Secondary).setCustomId("send_code");
-
-	const reply = new Reply({ title, description, footer: { text: code } });
-	let message;
-
-	if (subcommand === "encode") {
-		message = await interaction.editReply(reply.addComponents([b_offset, b_code]).visible());
-	} else if (subcommand === "decode") {
-		message = await interaction.reply(reply.addComponents([b_code]).visible());
-	} else {
-		return;
-	}
-
-	const collector = message.createMessageComponentCollector({
-		componentType: ComponentType.Button,
-		time: 300000,
-	});
-
-	collector.on("collect", async (i) => {
-		if (i.customId === "send_code") {
-			i.reply({ content: code, ephemeral: true });
-		} else if (i.customId === "offset_next") {
-			code = encode(deck, ++offset);
-			interaction.editReply(new Reply({ title, description, footer: { text: code } }).addComponents([b_offset, b_code]).visible());
-		}
-	});
-
-	collector.on("end", (collected) => {
-		interaction.editReply(new Reply().removeComponents().visible());
-	});
 };
 
 module.exports = {

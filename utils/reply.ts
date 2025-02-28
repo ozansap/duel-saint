@@ -1,15 +1,17 @@
-import { ActionRowBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedAuthorOptions, EmbedBuilder, EmbedFooterOptions, InteractionReplyOptions, InteractionResponse, MessageActionRowComponentBuilder } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedAuthorOptions, EmbedBuilder, EmbedFooterOptions, InteractionReplyOptions, InteractionResponse, MessageActionRowComponentBuilder } from "discord.js";
 import { colors } from "./vars";
 
 export class Reply {
 	content: string | null;
 	embeds: EmbedBuilder[];
 	components: ActionRowBuilder[];
+	files: AttachmentBuilder[];
 
 	constructor(options?: EmbedOptions) {
 		this.content = null;
 		this.embeds = [];
 		this.components = [];
+		this.files = [];
 
 		if (options) this.addEmbed(options);
 
@@ -81,6 +83,12 @@ export class Reply {
 		return this;
 	}
 
+	attachImage(attachment: Buffer): Reply {
+		this.files.push(new AttachmentBuilder(attachment, { name: "image.png" }));
+		this.embeds[0].setImage("attachment://image.png");
+		return this;
+	}
+
 	removeComponents() {
 		this.components = [];
 		return this;
@@ -109,6 +117,7 @@ export class Reply {
 		// @ts-ignore
 		message.components = this.components;
 		if (this.content) message.content = this.content;
+		if (this.files.length) message.files = this.files;
 		if (this.embeds.length) message.embeds = this.embeds;
 
 		return message;
@@ -120,6 +129,7 @@ export class Reply {
 		// @ts-ignore
 		message.components = this.components;
 		if (this.content) message.content = this.content;
+		if (this.files.length) message.files = this.files;
 		if (this.embeds.length) message.embeds = this.embeds;
 
 		return message;
