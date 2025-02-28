@@ -67,7 +67,7 @@ export class Reply {
 			if (i.customId === "delete") {
 				i.deferUpdate();
 				await m.delete();
-				collector.removeAllListeners();
+				// collector.removeAllListeners();
 				return;
 			}
 		});
