@@ -6,6 +6,7 @@ import { Command } from "./utils/types";
 import { Commands } from "./utils/commands";
 import { DB, GeneralHandler } from "./utils/db";
 import { Duel } from "./utils/duel";
+import { Cards } from "./utils/cards";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -21,6 +22,7 @@ client.once("ready", async () => {
 
 	await DB.connect();
 	await GeneralHandler.fetch();
+	Cards.refresh();
 
 	Commands.init(importedCommands);
 	await Commands.deploy(client);
