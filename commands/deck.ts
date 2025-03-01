@@ -18,7 +18,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let fromImage_result = await fromImage(attachment.url);
 		if (fromImage_result.error) {
 			const reply = Reply.error(fromImage_result.error.message);
-			return interaction.editReply(reply.ephemeral());
+			return interaction.editReply(reply.visible());
 		}
 
 		let deck = fromImage_result.data;
