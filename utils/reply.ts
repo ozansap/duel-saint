@@ -85,7 +85,7 @@ export class Reply {
 
 	attachImage(attachment: Buffer): Reply {
 		this.files.push(new AttachmentBuilder(attachment, { name: "image.png" }));
-		this.embeds[0].setImage("attachment://image.png");
+		// this.embeds[0].setImage("attachment://image.png");
 		return this;
 	}
 

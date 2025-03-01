@@ -1,16 +1,9 @@
 import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "../utils/reply";
 import { decode, encode, fromImage, toImage, toText } from "../utils/code";
-import sharp from "sharp";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const subcommand = interaction.options.getSubcommand(true);
-	let code = "";
-	let deckString = "";
-	let deckImage;
-	let deck: number[] = [];
-	let offset = 0;
-	let message;
 
 	if (subcommand === "encode") {
 		const attachment = interaction.options.getAttachment("deck_image", true);
@@ -28,8 +21,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			return interaction.editReply(reply.ephemeral());
 		}
 
-		deck = fromImage_result.data;
-		code = encode(deck);
+		let deck = fromImage_result.data;
+		let code = encode(deck);
 
 		let toText_result = toText(deck);
 		if (toText_result.error) {
@@ -37,8 +30,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			return interaction.editReply(reply.ephemeral());
 		}
 
-		deckString = toText_result.data;
-		let lines = deckString.split("\n");
+		let lines = toText_result.data.split("\n");
 		let title = lines.shift()!;
 		let description = lines.join("\n");
 		description += "\n\n⚠️ The deck code may not work, press `Next` until you get a working one";
@@ -47,13 +39,14 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let b_code = new ButtonBuilder().setLabel("See Code").setStyle(ButtonStyle.Secondary).setCustomId("see_code");
 
 		let reply = new Reply({ title, description, footer: { text: code } });
-		message = await interaction.editReply(reply.addComponents([b_offset, b_code]).visible());
+		let message = await interaction.editReply(reply.addComponents([b_offset, b_code]).visible());
 
 		const collector = message.createMessageComponentCollector({
 			componentType: ComponentType.Button,
 			time: 300000,
 		});
 
+		let offset = 0;
 		collector.on("collect", async (i) => {
 			if (i.customId === "see_code") {
 				i.reply({ content: code, ephemeral: true });
@@ -68,7 +61,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		});
 
 	} else if (subcommand === "decode") {
-		code = interaction.options.getString("deck_code", true);
+		let code = interaction.options.getString("deck_code", true);
 
 		let decode_result = decode(code);
 		if (decode_result.error) {
@@ -78,17 +71,28 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 		await interaction.deferReply();
 
-		deck = decode_result.data;
+		let deck = decode_result.data;
+
+		let toText_result = toText(deck);
+		if (toText_result.error) {
+			const reply = Reply.error(toText_result.error.message);
+			return interaction.editReply(reply.ephemeral());
+		}
+
+		let lines = toText_result.data.split("\n");
+		let title = lines.shift()!;
+		let description = lines.join("\n");
+
 		let toImage_result = await toImage(deck);
 		if (toImage_result.error) {
 			const reply = Reply.error(toImage_result.error.message);
 			return interaction.editReply(reply.ephemeral());
 		}
 
-		deckImage = toImage_result.data;
-		await sharp(deckImage, { raw: { width: 1200, height: 1630, channels: 4 } }).png().toFile("new.png");
-		// let reply = new Reply({ footer: { text: code } }).attachImage(deckImage).visible();
-		message = await interaction.editReply({ files: ["new.png"], embeds: [{ image: { url: "attachment://new.png" } }] });
+		let reply = new Reply({ title, description, footer: { text: code } }).attachImage(toImage_result.data).visible();
+		return await interaction.editReply(reply);
+		// await sharp(deckImage, { raw: { width: 1200, height: 1630, channels: 4 } }).png().toFile("new.png");
+		// message = await interaction.editReply({ files: ["new.png"], embeds: [{ image: { url: "attachment://new.png" } }] });
 	} else {
 		return;
 	}

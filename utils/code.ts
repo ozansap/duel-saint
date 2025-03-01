@@ -89,7 +89,7 @@ export function encode(deck: number[], offset: number = 0): string {
 		})
 	}
 
-	scrambled.push(...offset.toString(16).padStart(3, '0'))
+	scrambled.push("0", "0", "0");
 
 	let bytes = [];
 	for (let i = 0; i < scrambled.length; i += 2) {
@@ -217,7 +217,7 @@ export async function toImage(deck: number[]): Promise<Maybe<Buffer>> {
 	}
 
 	background.composite(composite);
-	return SuccessResult(await background.toBuffer());
+	return SuccessResult(await background.png().toBuffer());
 }
 
 export function toText(deck: number[]): Maybe<string> {
