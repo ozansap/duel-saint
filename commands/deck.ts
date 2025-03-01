@@ -83,13 +83,37 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let title = lines.shift()!;
 		let description = lines.join("\n");
 
+		let reply = new Reply({ title, description, footer: { text: code } }).visible();
+		return await interaction.editReply(reply);
+	} else if (subcommand === "image") {
+		let code = interaction.options.getString("deck_code", true);
+
+		let decode_result = decode(code);
+		if (decode_result.error) {
+			const reply = Reply.error(decode_result.error.message);
+			return interaction.reply(reply.ephemeral());
+		}
+
+		await interaction.deferReply();
+
+		let deck = decode_result.data;
+
+		let toText_result = toText(deck);
+		if (toText_result.error) {
+			const reply = Reply.error(toText_result.error.message);
+			return interaction.editReply(reply.ephemeral());
+		}
+
+		let lines = toText_result.data.split("\n");
+		let title = lines.shift()!;
+
 		let toImage_result = await toImage(deck);
 		if (toImage_result.error) {
 			const reply = Reply.error(toImage_result.error.message);
 			return interaction.editReply(reply.ephemeral());
 		}
 
-		let reply = new Reply({ title, description, footer: { text: code } }).attachImage(toImage_result.data).visible();
+		let reply = new Reply({ title, footer: { text: code }, image: "attachment://image.png" }).attachImage(toImage_result.data).visible();
 		return await interaction.editReply(reply);
 		// await sharp(deckImage, { raw: { width: 1200, height: 1630, channels: 4 } }).png().toFile("new.png");
 		// message = await interaction.editReply({ files: ["new.png"], embeds: [{ image: { url: "attachment://new.png" } }] });
@@ -114,6 +138,12 @@ module.exports = {
 			sc
 				.setName("decode")
 				.setDescription("Find the deck that is represented by the deck code")
+				.addStringOption((o) => o.setName("deck_code").setDescription("Deck code").setRequired(true))
+		)
+		.addSubcommand((sc) =>
+			sc
+				.setName("image")
+				.setDescription("Generate the image from a deck code")
 				.addStringOption((o) => o.setName("deck_code").setDescription("Deck code").setRequired(true))
 		),
 };
