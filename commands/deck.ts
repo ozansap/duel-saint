@@ -22,21 +22,22 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 		await interaction.deferReply();
 
-		let deck_maybe = await fromImage(attachment.url);
-		if (deck_maybe instanceof Error) {
-			const reply = Reply.error(deck_maybe.message);
+		let fromImage_result = await fromImage(attachment.url);
+		if (fromImage_result.error) {
+			const reply = Reply.error(fromImage_result.error.message);
 			return interaction.editReply(reply.ephemeral());
 		}
 
-		deck = deck_maybe;
+		deck = fromImage_result.data;
 		code = encode(deck);
-		let deckString_maybe = toText(deck);
-		if (deckString_maybe instanceof Error) {
-			const reply = Reply.error(deckString_maybe.message);
+
+		let toText_result = toText(deck);
+		if (toText_result.error) {
+			const reply = Reply.error(toText_result.error.message);
 			return interaction.editReply(reply.ephemeral());
 		}
 
-		deckString = deckString_maybe;
+		deckString = toText_result.data;
 		let lines = deckString.split("\n");
 		let title = lines.shift()!;
 		let description = lines.join("\n");
@@ -69,22 +70,22 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	} else if (subcommand === "decode") {
 		code = interaction.options.getString("deck_code", true);
 
-		let deck_maybe = decode(code);
-		if (deck_maybe instanceof Error) {
-			const reply = Reply.error(deck_maybe.message);
+		let decode_result = decode(code);
+		if (decode_result.error) {
+			const reply = Reply.error(decode_result.error.message);
 			return interaction.reply(reply.ephemeral());
 		}
 
 		await interaction.deferReply();
 
-		deck = deck_maybe;
-		let image_maybe = await toImage(deck);
-		if (image_maybe instanceof Error) {
-			const reply = Reply.error(image_maybe.message);
+		deck = decode_result.data;
+		let toImage_result = await toImage(deck);
+		if (toImage_result.error) {
+			const reply = Reply.error(toImage_result.error.message);
 			return interaction.editReply(reply.ephemeral());
 		}
 
-		deckImage = image_maybe;
+		deckImage = toImage_result.data;
 		await sharp(deckImage, { raw: { width: 1200, height: 1630, channels: 4 } }).png().toFile("new.png");
 		// let reply = new Reply({ footer: { text: code } }).attachImage(deckImage).visible();
 		message = await interaction.editReply({ files: ["new.png"], embeds: [{ image: { url: "attachment://new.png" } }] });

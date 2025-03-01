@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import Pixelmatch from "pixelmatch";
 import { Cards } from "./cards";
+import { ErrorResult, Maybe, SuccessResult } from "./types";
 
 const position = {
 	characters: [
@@ -102,11 +103,11 @@ export function encode(deck: number[], offset: number = 0): string {
 	return code;
 }
 
-export function decode(code: string): number[] | Error {
+export function decode(code: string): Maybe<number[]> {
 	let buffer = Buffer.from(code, 'base64');
 	let hex_code = buffer.toString('hex');
 
-	if (hex_code.length !== 102) return new Error("This is not a valid deck code");
+	if (hex_code.length !== 102) return ErrorResult("This is not a valid deck code");
 
 	let bytes = [];
 	for (let i = 0; i < hex_code.length; i += 2) {
@@ -122,13 +123,13 @@ export function decode(code: string): number[] | Error {
 		unscrambled.push(scrambling[i].map(s => scrambled[s]).join(""));
 	}
 
-	if (unscrambled.length !== 33) return new Error("This is not a valid deck code");
+	if (unscrambled.length !== 33) return ErrorResult("This is not a valid deck code");
 
 	let deck = unscrambled.map(s => parseInt(s, 16));
-	return deck;
+	return SuccessResult(deck);
 }
 
-export async function fromImage(url: string): Promise<number[] | Error> {
+export async function fromImage(url: string): Promise<Maybe<number[]>> {
 	let arrayBuffer;
 
 	try {
@@ -136,7 +137,7 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 		arrayBuffer = await response.arrayBuffer();
 	} catch (err) {
 		console.error(err);
-		return new Error("Something went wrong");
+		return ErrorResult("Something went wrong");
 	}
 
 	let characters = Cards.characters;
@@ -160,7 +161,7 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 	}
 
 	if (deck.length as number !== 3) {
-		return new Error("Failed to detect characters");
+		return ErrorResult("Failed to detect characters");
 	}
 
 	let index = 0;
@@ -187,19 +188,19 @@ export async function fromImage(url: string): Promise<number[] | Error> {
 	}
 
 	if (deck.length as number !== 33) {
-		return new Error("Failed to detect actions");
+		return ErrorResult("Failed to detect actions");
 	}
 
-	return deck;
+	return SuccessResult(deck);
 }
 
-export async function toImage(deck: number[]): Promise<Buffer | Error> {
+export async function toImage(deck: number[]): Promise<Maybe<Buffer>> {
 	let background = sharp("assets/background.png").raw();
 	let composite = [];
 
 	for (let i = 0; i < 3; i++) {
-		let card = Cards.all.find(c => c.code === deck[i]);
-		if (card === undefined) return new Error(`Could not find a card with code: ${deck[i]}\nThis is likely because my code isn't updated yet`);
+		let card = Cards.characters.find(c => c.code === deck[i]);
+		if (card === undefined) return ErrorResult(`Could not find a card with code: ${deck[i]}\nThis is likely because my code isn't updated yet`);
 		let img = await sharp(`cards/${card.id}.png`).resize(position.characters[i].width, position.characters[i].height).ensureAlpha().toBuffer();
 		let border = await sharp("assets/border.png").resize(position.characters[i].width, position.characters[i].height).ensureAlpha().toBuffer();
 		composite.push({ input: img, left: position.characters[i].left, top: position.characters[i].top });
@@ -207,8 +208,8 @@ export async function toImage(deck: number[]): Promise<Buffer | Error> {
 	}
 
 	for (let i = 3; i < deck.length; i++) {
-		let card = Cards.all.find(c => c.code === deck[i]);
-		if (card === undefined) return new Error(`Could not find a card with code: ${deck[i]}\nThis is likely because my code isn't updated yet`);
+		let card = Cards.actions.find(c => c.code === deck[i]);
+		if (card === undefined) return ErrorResult(`Could not find a card with code: ${deck[i]}\nThis is likely because my code isn't updated yet`);
 		let img = await sharp(`cards/${card.id}.png`).resize(position.actions[i - 3].width, position.actions[i - 3].height).ensureAlpha().toBuffer();
 		let border = await sharp("assets/border.png").resize(position.actions[i - 3].width, position.actions[i - 3].height).ensureAlpha().toBuffer();
 		composite.push({ input: img, left: position.actions[i - 3].left, top: position.actions[i - 3].top });
@@ -216,10 +217,10 @@ export async function toImage(deck: number[]): Promise<Buffer | Error> {
 	}
 
 	background.composite(composite);
-	return background.toBuffer();
+	return SuccessResult(await background.toBuffer());
 }
 
-export function toText(deck: number[]): string | Error {
+export function toText(deck: number[]): Maybe<string> {
 	let grouped: Map<number, number> = new Map();
 	deck.forEach(v => grouped.set(v, (grouped.get(v) ?? 0) + 1));
 
@@ -228,19 +229,19 @@ export function toText(deck: number[]): string | Error {
 	let text = "";
 
 	for (let [code, count] of entries.slice(0, 3)) {
-		let name = Cards.all.find(c => c.code === code)?.name;
-		if (name === undefined) return new Error(`Could not find a card with code: ${code}\nThis is likely because my code isn't updated yet`);
+		let name = Cards.characters.find(c => c.code === code)?.name;
+		if (name === undefined) return ErrorResult(`Could not find a card with code: ${code}\nThis is likely because my code isn't updated yet`);
 		characters.push(name);
 	}
 
 	for (let [code, count] of entries.slice(3)) {
-		let name = Cards.all.find(c => c.code === code)?.name;
-		if (name === undefined) return new Error(`Could not find a card with code: ${code}\nThis is likely because my code isn't updated yet`);
+		let name = Cards.actions.find(c => c.code === code)?.name;
+		if (name === undefined) return ErrorResult(`Could not find a card with code: ${code}\nThis is likely because my code isn't updated yet`);
 		text += `\n${count} - ${name}`;
 	}
 
 	text = characters.join(" - ") + text;
-	return text;
+	return SuccessResult(text);
 }
 
 function hex_offset(bytes: string[], offset: number) {
