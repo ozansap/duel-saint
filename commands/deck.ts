@@ -27,7 +27,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let toText_result = toText(deck);
 		if (toText_result.error) {
 			const reply = Reply.error(toText_result.error.message);
-			return interaction.editReply(reply.ephemeral());
+			return interaction.editReply(reply.visible());
 		}
 
 		let lines = toText_result.data.split("\n");
@@ -76,7 +76,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let toText_result = toText(deck);
 		if (toText_result.error) {
 			const reply = Reply.error(toText_result.error.message);
-			return interaction.editReply(reply.ephemeral());
+			return interaction.editReply(reply.visible());
 		}
 
 		let lines = toText_result.data.split("\n");
@@ -91,7 +91,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let decode_result = decode(code);
 		if (decode_result.error) {
 			const reply = Reply.error(decode_result.error.message);
-			return interaction.reply(reply.ephemeral());
+			return interaction.reply(reply.visible());
 		}
 
 		await interaction.deferReply();
@@ -101,7 +101,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let toText_result = toText(deck);
 		if (toText_result.error) {
 			const reply = Reply.error(toText_result.error.message);
-			return interaction.editReply(reply.ephemeral());
+			return interaction.editReply(reply.visible());
 		}
 
 		let lines = toText_result.data.split("\n");
@@ -110,7 +110,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let toImage_result = await toImage(deck);
 		if (toImage_result.error) {
 			const reply = Reply.error(toImage_result.error.message);
-			return interaction.editReply(reply.ephemeral());
+			return interaction.editReply(reply.visible());
 		}
 
 		let reply = new Reply({ title, footer: { text: code }, image: "attachment://image.png" }).attachImage(toImage_result.data).visible();

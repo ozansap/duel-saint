@@ -74,7 +74,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	});
 
 	collector.on("end", (collected) => {
-		interaction.editReply(Reply.error("This session is over, you can start a new one").removeComponents().ephemeral());
+		interaction.editReply(Reply.error("This session is over, you can start a new one").removeComponents().visible());
 	});
 };
 
