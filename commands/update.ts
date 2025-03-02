@@ -1,7 +1,10 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { GUILD_ID } from "../config";
+import { number } from "../utils/num";
 import { Reply } from "../utils/reply";
 import { update_cards } from "../utils/update_cards";
+import { Commands } from "../utils/commands";
+import { execSync } from "child_process";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
@@ -28,6 +31,12 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
     const reply = Reply.success(`Updated **${result.data}** new cards`);
     return interaction.editReply(reply.visible());
+  } else if (subcommand === "commands") {
+    const size = await Commands.refresh(interaction.client);
+    const reply = Reply.success(`Deleted **${number(size[0], "command")}**\nDeployed **${number(size[1], "command")}**`);
+    return interaction.reply(reply.visible());
+  } else if (subcommand === "bot") {
+    execSync("git pull && pm2 restart duel-saint");
   }
 };
 
@@ -39,4 +48,6 @@ module.exports = {
     .setDefaultMemberPermissions(8)
     .setDMPermission(false)
     .addSubcommand((sc) => sc.setName("cards").setDescription("Update the new cards"))
+    .addSubcommand((sc) => sc.setName("commands").setDescription("Refresh the global commands"))
+    .addSubcommand((sc) => sc.setName("bot").setDescription("Pull from github and restart the bot")),
 };

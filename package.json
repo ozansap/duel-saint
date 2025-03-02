@@ -6,7 +6,7 @@
 	"scripts": {
 		"test": "tsc && node build/app.js",
 		"start": "rm -rf build && tsc && node build/app.js",
-		"serve": "rm -rf build && tsc && pm2 start build/app.js -n GITCG",
+		"serve": "rm -rf build && tsc && pm2 start build/app.js -n duel-saint",
 		"update": "node update_cards.js"
 	},
 	"keywords": [],

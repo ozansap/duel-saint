@@ -174,11 +174,12 @@ export async function fromImage(url: string): Promise<Maybe<number[]>> {
 
 			let diff = Pixelmatch(cropped, img, null, p.width, p.height, { threshold: 0.1 });
 
+			let isTalent = 210000 < card.id && card.id < 230000;
 			let isFood = 333000 < card.id && card.id < 334000;
 			let isItem = 323000 < card.id && card.id < 324000;
 
 			let r = ratio(diff, p.width, p.height);
-			if ((isFood || isItem) && r > 0.2) continue;
+			if ((isTalent || isFood || isItem) && r > 0.2) continue;
 			else if (r > 0.3) continue;
 
 			index = i;
