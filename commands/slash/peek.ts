@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
-import { UserHandler } from "../utils/db";
-import { Reply } from "../utils/reply";
-import { User } from "../utils/user";
+import { UserHandler } from "@utils/db";
+import { Reply } from "@utils/reply";
+import { User } from "@utils/user";
 
 const screenMenu = (screen = "profile") => {
 	return new StringSelectMenuBuilder().setCustomId("screen").addOptions(

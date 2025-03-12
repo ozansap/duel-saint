@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { GUILD_ID } from "../config";
-import { UserHandler } from "../utils/db";
-import { Reply } from "../utils/reply";
-import { duration, now } from "../utils/time";
+import { GUILD_ID } from "@config";
+import { UserHandler } from "@utils/db";
+import { Reply } from "@utils/reply";
+import { duration, now } from "@utils/time";
 
 const durationList = {
 	"1_day": 60 * 60 * 24,

@@ -1,10 +1,10 @@
 import { ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, CommandInteraction, ComponentType, Guild, Message, Snowflake } from "discord.js";
-import { DISPUTE_CATEGORY_ID, MOD_ROLE_ID } from "../config";
-import { DuelHandler, UserHandler } from "./db";
-import { clamp, number, rank, uid } from "./num";
-import { Reply } from "./reply";
-import { now } from "./time";
-import { colors, ranks } from "./vars";
+import { DISPUTE_CATEGORY_ID, MOD_ROLE_ID } from "@config";
+import { DuelHandler, UserHandler } from "@utils/db";
+import { clamp, number, rank, uid } from "@utils/num";
+import { Reply } from "@utils/reply";
+import { now } from "@utils/time";
+import { colors, ranks } from "@utils/vars";
 
 const duration = 60 * 60 * 24 * 7;
 

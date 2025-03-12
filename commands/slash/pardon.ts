@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { GUILD_ID } from "../config";
-import { UserHandler } from "../utils/db";
-import { Reply } from "../utils/reply";
+import { GUILD_ID } from "@config";
+import { UserHandler } from "@utils/db";
+import { Reply } from "@utils/reply";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const subcommand = interaction.options.getSubcommand(true);

@@ -1,5 +1,5 @@
 import { ApplicationCommandOptionType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { Reply } from "../utils/reply";
+import { Reply } from "@utils/reply";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	let description = "";

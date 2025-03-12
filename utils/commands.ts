@@ -1,6 +1,6 @@
-import { Client, REST, RESTPostAPIChatInputApplicationCommandsJSONBody, Routes } from "discord.js";
-import { TEST, TOKEN, GUILD_ID } from "../config";
-import { Command } from "./types";
+import { Client, REST, RESTPostAPIChatInputApplicationCommandsJSONBody, RESTPostAPIContextMenuApplicationCommandsJSONBody, Routes } from "discord.js";
+import { TEST, TOKEN, GUILD_ID } from "@config";
+import { Command } from "@utils/types";
 
 export class Commands {
 	static list: Map<string, Command> = new Map();
@@ -12,7 +12,7 @@ export class Commands {
 	}
 
 	static async deploy(client: Client): Promise<void> {
-		let commandsData: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
+		let commandsData: (RESTPostAPIChatInputApplicationCommandsJSONBody | RESTPostAPIContextMenuApplicationCommandsJSONBody)[] = [];
 		for (const command of Commands.list.values()) {
 			commandsData.push(command.data.toJSON());
 		}

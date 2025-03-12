@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { Leaderboard } from "../utils/db";
-import { Reply } from "../utils/reply";
-import { UserData } from "../utils/types";
-import { seasons } from "../utils/vars";
+import { Leaderboard } from "@utils/db";
+import { Reply } from "@utils/reply";
+import { UserData } from "@utils/types";
+import { seasons } from "@utils/vars";
 
 const types = {
 	elo: "Rating",

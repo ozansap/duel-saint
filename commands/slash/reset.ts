@@ -1,10 +1,10 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { GUILD_ID } from "../config";
-import { DB, Leaderboard, UserHandler } from "../utils/db";
-import { Reply } from "../utils/reply";
-import { now } from "../utils/time";
-import { SeasonalProfile } from "../utils/types";
-import { events, ranks, seasons } from "../utils/vars";
+import { GUILD_ID } from "@config";
+import { DB, Leaderboard, UserHandler } from "@utils/db";
+import { Reply } from "@utils/reply";
+import { now } from "@utils/time";
+import { SeasonalProfile } from "@utils/types";
+import { events, ranks, seasons } from "@utils/vars";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const subcommand = interaction.options.getSubcommand(true);

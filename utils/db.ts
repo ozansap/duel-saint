@@ -1,9 +1,9 @@
 import { Snowflake } from "discord.js";
-import { MONGO_URI, MONGO_DB_NAME } from "../config";
-import { DuelData, GeneralData, SeasonalProfile, UserData } from "./types";
 import { Collection, MongoClient, ObjectId, OptionalId } from "mongodb";
-import { now, year } from "./time";
-import { seasons } from "./vars";
+import { MONGO_URI, MONGO_DB_NAME } from "@config";
+import { DuelData, GeneralData, SeasonalProfile, UserData } from "@utils/types";
+import { now, year } from "@utils/time";
+import { seasons } from "@utils/vars";
 
 const userData_default = {
 	wins: 0,

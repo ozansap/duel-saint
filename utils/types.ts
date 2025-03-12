@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder, Snowflake } from "discord.js";
+import { CommandInteraction, ContextMenuCommandBuilder, SlashCommandBuilder, Snowflake } from "discord.js";
 import { ObjectId } from "mongodb";
 
 export type UserData = {
@@ -75,7 +75,7 @@ export type SeasonalProfile = {
 
 export type Command = {
 	execute: (interaction: CommandInteraction) => Promise<void>;
-	data: SlashCommandBuilder;
+	data: SlashCommandBuilder | ContextMenuCommandBuilder;
 };
 
 export type Maybe<T> = { data: null; error: Error } | { data: T; error: null };

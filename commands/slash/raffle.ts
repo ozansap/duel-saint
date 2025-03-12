@@ -1,9 +1,9 @@
 import { ChatInputCommandInteraction, GuildMember, SlashCommandBuilder } from "discord.js";
-import { GUILD_ID } from "../config";
-import { DB } from "../utils/db";
-import { Reply } from "../utils/reply";
-import { events } from "../utils/vars";
-import { year } from "../utils/time";
+import { GUILD_ID } from "@config";
+import { DB } from "@utils/db";
+import { Reply } from "@utils/reply";
+import { events } from "@utils/vars";
+import { year } from "@utils/time";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const event = interaction.options.getString("event", true);

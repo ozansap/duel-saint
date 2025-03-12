@@ -4,10 +4,8 @@
 	"description": "a discord bot",
 	"main": "app.ts",
 	"scripts": {
-		"test": "tsc && node build/app.js",
-		"start": "rm -rf build && tsc && node build/app.js",
-		"serve": "rm -rf build && tsc && pm2 start build/app.js -n duel-saint",
-		"update": "node update_cards.js"
+		"start": "tsx app.ts",
+		"serve": "pm2 start 'tsx app.ts' --name duel-saint"
 	},
 	"keywords": [],
 	"author": "Swagnemite",

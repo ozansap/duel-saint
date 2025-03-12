@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
-import { GeneralHandler } from "../utils/db";
-import { Duel, DuelState } from "../utils/duel";
-import { Reply } from "../utils/reply";
-import { GeneralData } from "../utils/types";
+import { GeneralHandler } from "@utils/db";
+import { Duel, DuelState } from "@utils/duel";
+import { Reply } from "@utils/reply";
+import { GeneralData } from "@utils/types";
 
 const description = (duels: GeneralData["duels"]): string => {
 	const all = Array.from(Duel.list.values());

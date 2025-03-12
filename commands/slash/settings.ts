@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
-import { UserHandler } from "../utils/db";
-import { Reply } from "../utils/reply";
+import { UserHandler } from "@utils/db";
+import { Reply } from "@utils/reply";
 
 const types = {
 	profile: {

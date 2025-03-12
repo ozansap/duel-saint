@@ -1,10 +1,10 @@
 import { ChannelType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { GUILD_ID } from "../config";
-import { DuelHandler } from "../utils/db";
-import { Duel } from "../utils/duel";
-import { Reply } from "../utils/reply";
-import { now } from "../utils/time";
-import { colors } from "../utils/vars";
+import { GUILD_ID } from "@config";
+import { DuelHandler } from "@utils/db";
+import { Duel } from "@utils/duel";
+import { Reply } from "@utils/reply";
+import { now } from "@utils/time";
+import { colors } from "@utils/vars";
 
 const verdicts = {
 	user: "Player 1 Win",

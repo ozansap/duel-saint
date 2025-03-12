@@ -14,7 +14,12 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
 
-		"outDir": "build"
+		"outDir": "build",
+    "baseUrl": "./",
+    "paths": {
+      "@utils/*": ["utils/*"],
+      "@config": ["config.ts"],
+    }
   }
 
 }

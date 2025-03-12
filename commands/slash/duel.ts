@@ -1,10 +1,10 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { GUILD_ID, OWNER_ID } from "../config";
-import { GeneralHandler, UserHandler } from "../utils/db";
-import { Duel, DuelState } from "../utils/duel";
-import { Reply } from "../utils/reply";
-import { now } from "../utils/time";
-import { seasons } from "../utils/vars";
+import { GUILD_ID, OWNER_ID } from "@config";
+import { GeneralHandler, UserHandler } from "@utils/db";
+import { Duel, DuelState } from "@utils/duel";
+import { Reply } from "@utils/reply";
+import { now } from "@utils/time";
+import { seasons } from "@utils/vars";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	if (seasons.dates[seasons.current] < now()) {

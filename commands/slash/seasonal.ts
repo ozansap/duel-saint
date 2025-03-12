@@ -1,8 +1,8 @@
 import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
-import { UserHandler } from "../utils/db";
-import { Reply } from "../utils/reply";
-import { User } from "../utils/user";
-import { seasons } from "../utils/vars";
+import { UserHandler } from "@utils/db";
+import { Reply } from "@utils/reply";
+import { User } from "@utils/user";
+import { seasons } from "@utils/vars";
 
 const seasonMenu = (season = "alltime") => {
 	return new StringSelectMenuBuilder().setCustomId("season").addOptions(

@@ -1,10 +1,10 @@
 import { Snowflake } from "discord.js";
-import { allTimeRanking, DB, UserHandler } from "./db";
-import { createBar, number, rank } from "./num";
-import { Reply } from "./reply";
-import { date, duration, now, year } from "./time";
-import { DuelData, UserData } from "./types";
-import { events, seasons } from "./vars";
+import { allTimeRanking, DB, UserHandler } from "@utils/db";
+import { createBar, number, rank } from "@utils/num";
+import { Reply } from "@utils/reply";
+import { date, duration, now, year } from "@utils/time";
+import { DuelData, UserData } from "@utils/types";
+import { events, seasons } from "@utils/vars";
 
 export class User {
 	constructor(data: UserData) {

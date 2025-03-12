@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { UserHandler } from "../utils/db";
-import { User } from "../utils/user";
+import { UserHandler } from "@utils/db";
+import { User } from "@utils/user";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const hidden = interaction.options.getBoolean("hidden");

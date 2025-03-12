@@ -1,20 +1,21 @@
 import { Client, ActivityType, GatewayIntentBits } from "discord.js";
 import fs from "fs";
-
-import { TOKEN } from "./config";
-import { Command } from "./utils/types";
-import { Commands } from "./utils/commands";
-import { DB, GeneralHandler } from "./utils/db";
-import { Duel } from "./utils/duel";
-import { Cards } from "./utils/cards";
+import { TOKEN } from "@config";
+import { Command } from "@utils/types";
+import { Commands } from "@utils/commands";
+import { DB, GeneralHandler } from "@utils/db";
+import { Duel } from "@utils/duel";
+import { Cards } from "@utils/cards";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-const importedCommands: Command[] = [];
-const importedCommandFiles = fs.readdirSync(__dirname + "/commands");
-for (const file of importedCommandFiles) {
-	const command = require(`./commands/${file}`);
-	importedCommands.push(command);
+const commands: Command[] = [];
+for (let type of ["slash", "context_menu"]) {
+	let files = fs.readdirSync(__dirname + `/commands/${type}`);
+	for (let file of files) {
+		let command = require(`./commands/${type}/${file}`);
+		commands.push(command);
+	}
 }
 
 client.once("ready", async () => {
@@ -24,14 +25,14 @@ client.once("ready", async () => {
 	await GeneralHandler.fetch();
 	Cards.refresh();
 
-	Commands.init(importedCommands);
+	Commands.init(commands);
 	await Commands.deploy(client);
 
 	console.log(`Logged in as ${client.user?.username}!`);
 });
 
 client.on("interactionCreate", async (interaction) => {
-	if (interaction.isCommand()) {
+	if (interaction.isChatInputCommand() || interaction.isContextMenuCommand()) {
 		const command = Commands.list.get(interaction.commandName);
 
 		try {

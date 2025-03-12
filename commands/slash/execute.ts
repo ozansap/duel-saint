@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { DB } from "../utils/db";
-import { Reply } from "../utils/reply";
-import { colors } from "../utils/vars";
+import { DB } from "@utils/db";
+import { Reply } from "@utils/reply";
+import { colors } from "@utils/vars";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const options = {

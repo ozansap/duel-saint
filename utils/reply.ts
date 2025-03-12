@@ -1,5 +1,5 @@
 import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedAuthorOptions, EmbedBuilder, EmbedFooterOptions, InteractionReplyOptions, InteractionResponse, MessageActionRowComponentBuilder } from "discord.js";
-import { colors } from "./vars";
+import { colors } from "@utils/vars";
 
 export class Reply {
 	content: string | null;

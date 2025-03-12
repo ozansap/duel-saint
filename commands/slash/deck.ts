@@ -1,6 +1,6 @@
 import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder } from "discord.js";
-import { Reply } from "../utils/reply";
-import { decode, encode, fromImage, toImage, toText } from "../utils/code";
+import { Reply } from "@utils/reply";
+import { decode, encode, fromImage, toImage, toText } from "@utils/code";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const subcommand = interaction.options.getSubcommand(true);

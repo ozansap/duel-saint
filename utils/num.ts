@@ -1,5 +1,5 @@
-import { RankInfo } from "./types";
-import { ranks } from "./vars";
+import { RankInfo } from "@utils/types";
+import { ranks } from "@utils/vars";
 
 export function randBetween(min: number, max: number): number {
 	return Math.floor(Math.random() * (max - min + 1) + min);

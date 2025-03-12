@@ -1,7 +1,7 @@
 import fs from "fs";
-import { Card, Cards } from "./cards";
-import { decode } from "./code";
-import { ErrorResult, Maybe, SuccessResult } from "./types";
+import { Card, Cards } from "@utils/cards";
+import { decode } from "@utils/code";
+import { ErrorResult, Maybe, SuccessResult } from "@utils/types";
 
 const api_cards = 'https://sg-hk4e-api-static.hoyoverse.com/event/e20221207cardlanding/v2/card_config?lang=en-us';
 const api_code = 'https://sg-public-api.hoyolab.com/event/cardsquare/encode_card_code?lang=en-us';

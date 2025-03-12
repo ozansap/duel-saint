@@ -1,7 +1,7 @@
 import sharp from "sharp";
 import Pixelmatch from "pixelmatch";
-import { Cards } from "./cards";
-import { ErrorResult, Maybe, SuccessResult } from "./types";
+import { Cards } from "@utils/cards";
+import { ErrorResult, Maybe, SuccessResult } from "@utils/types";
 
 const position = {
 	characters: [

@@ -1,4 +1,4 @@
-import { UserData } from "./types";
+import { UserData } from "@utils/types";
 
 export const colors = {
 	default: 0xe6ab5f,
