@@ -3,6 +3,7 @@ import { GeneralHandler } from "@utils/db";
 import { Duel, DuelState } from "@utils/duel";
 import { Reply } from "@utils/reply";
 import { GeneralData } from "@utils/types";
+import { GUILD_ID } from "@config";
 
 const description = (duels: GeneralData["duels"]): string => {
 	const all = Array.from(Duel.list.values());
@@ -14,6 +15,11 @@ const description = (duels: GeneralData["duels"]): string => {
 };
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
+	if (interaction.guild?.id !== GUILD_ID) {
+		const reply = Reply.error(`That command can only be used in the main server`);
+		return interaction.reply(reply.ephemeral());
+	}
+
 	const b_enable = new ButtonBuilder().setLabel("Enable").setStyle(ButtonStyle.Success).setCustomId("enable");
 	const b_disable = new ButtonBuilder().setLabel("Disable").setStyle(ButtonStyle.Danger).setCustomId("disable");
 	const b_message = new ButtonBuilder().setLabel("Edit Message").setStyle(ButtonStyle.Secondary).setCustomId("message");
@@ -69,5 +75,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 module.exports = {
 	execute,
-	data: new SlashCommandBuilder().setName("duels").setDescription("Admin dashboard for controlling duels").setDefaultMemberPermissions(8).setDMPermission(false),
+	data: new SlashCommandBuilder()
+		.setName("duel-manager")
+		.setDescription("Admin dashboard for controlling duels")
+		.setDefaultMemberPermissions(8)
+		.setContexts(0),
 };

@@ -68,5 +68,5 @@ module.exports = {
 	data: new ContextMenuCommandBuilder()
 		.setName("Encode Deck Image")
 		.setType(ApplicationCommandType.Message)
-		.setDMPermission(false)
+		.setContexts(0, 1)
 };

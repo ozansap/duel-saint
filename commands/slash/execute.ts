@@ -2,8 +2,14 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { DB } from "@utils/db";
 import { Reply } from "@utils/reply";
 import { colors } from "@utils/vars";
+import { OWNER_ID } from "@config";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
+	if (interaction.user.id !== OWNER_ID) {
+		const reply = Reply.error("You are not authorized to use this command");
+		return interaction.reply(reply.ephemeral());
+	}
+
 	const options = {
 		rename,
 	};
