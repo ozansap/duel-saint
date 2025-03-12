@@ -24,9 +24,7 @@ client.once("ready", async () => {
 	await DB.connect();
 	await GeneralHandler.fetch();
 	Cards.refresh();
-
 	Commands.init(commands);
-	await Commands.deploy(client);
 
 	console.log(`Logged in as ${client.user?.username}!`);
 });

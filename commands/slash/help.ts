@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
@@ -6,7 +6,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 	const commands = await interaction.client.application?.commands.fetch();
 	commands?.forEach(async (c) => {
-		if (!c.defaultMemberPermissions) {
+		if (!c.defaultMemberPermissions && c.type === ApplicationCommandType.ChatInput) {
 			const subcommands = c.options.filter((o) => o.type === ApplicationCommandOptionType.Subcommand);
 			if (subcommands.length !== 0) {
 				for (const s of subcommands) {
