@@ -16,7 +16,7 @@ const userData_default = {
 export class DB {
 	static users: Collection<OptionalId<UserData>>;
 	static duels: Collection<DuelData>;
-	static general: Collection<OptionalId<GeneralData>>;
+	static general: Collection<GeneralData>;
 	static mongoClient = new MongoClient(MONGO_URI);
 
 	static async connect(): Promise<void> {
@@ -36,6 +36,7 @@ export class UserHandler {
 
 	constructor(userID: Snowflake) {
 		this.data = {
+			coins: 0,
 			wins: 0,
 			losses: 0,
 			elo: 1000,
@@ -295,6 +296,30 @@ export class UserHandler {
 		});
 		return this;
 	}
+
+	coins_add(amount: number): UserHandler {
+		this.stages.push({
+			$set: {
+				coins: {
+					$cond: {
+						if: { $eq: [{ $type: "$coins" }, "missing"] },
+						then: amount,
+						else: { $add: ["$coins", amount] },
+					},
+				},
+			},
+		});
+		return this;
+	}
+
+	coins_set(amount: number): UserHandler {
+		this.stages.push({
+			$set: {
+				coins: amount,
+			},
+		});
+		return this;
+	}
 }
 
 export class DuelHandler {
@@ -332,10 +357,16 @@ export class DuelHandler {
 
 export class GeneralHandler {
 	static data: GeneralData = {
+		_id: "1",
 		duels: {
 			enabled: true,
 			message: "Duels are disabled right now",
 		},
+		shop: {
+			enabled: true,
+			message: "The shop is disabled right now",
+			items: [],
+		}
 	};
 	stages: any[];
 
@@ -365,6 +396,18 @@ export class GeneralHandler {
 		});
 		return this;
 	}
+
+	shop_set(shop: GeneralData["shop"]) {
+		this.stages.push({
+			$set: {
+				shop: shop,
+			},
+		});
+	}
+}
+
+export class PurchaseHandler {
+
 }
 
 export class Leaderboard {

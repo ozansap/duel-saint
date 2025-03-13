@@ -1,4 +1,4 @@
-import { CommandInteraction, ContextMenuCommandBuilder, SlashCommandBuilder, Snowflake } from "discord.js";
+import { AutocompleteInteraction, CommandInteraction, ContextMenuCommandBuilder, SlashCommandBuilder, Snowflake } from "discord.js";
 import { ObjectId } from "mongodb";
 
 export type UserData = {
@@ -6,6 +6,8 @@ export type UserData = {
 
 	tag?: string;
 	last?: number;
+
+	coins: number;
 
 	wins: number;
 	losses: number;
@@ -50,13 +52,25 @@ export type DuelData = {
 };
 
 export type GeneralData = {
-	_id?: "1";
+	_id: "1";
 
 	duels: {
 		enabled: boolean;
 		message: string;
 	};
+	shop: {
+		enabled: boolean;
+		message: string;
+		items: ShopItem[];
+	}
 };
+
+export type ShopItem = {
+	name: string,
+	cost: number,
+	description?: string,
+	tags: string[],
+}
 
 export type RankInfo = {
 	n: number;
@@ -75,6 +89,7 @@ export type SeasonalProfile = {
 
 export type Command = {
 	execute: (interaction: CommandInteraction) => Promise<void>;
+	autocomplete?: (interaction: AutocompleteInteraction) => Promise<void>;
 	data: SlashCommandBuilder | ContextMenuCommandBuilder;
 };
 

@@ -50,3 +50,5 @@ export const events = [
 		active: false,
 	},
 ];
+
+export const pitacoin = "<:pitacoin:1263752130024570921>";

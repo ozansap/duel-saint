@@ -4,7 +4,7 @@ import { createBar, number, rank } from "@utils/num";
 import { Reply } from "@utils/reply";
 import { date, duration, now, year } from "@utils/time";
 import { DuelData, UserData } from "@utils/types";
-import { events, seasons } from "@utils/vars";
+import { events, pitacoin, seasons } from "@utils/vars";
 
 export class User {
 	constructor(data: UserData) {
@@ -15,7 +15,8 @@ export class User {
 		const s = this.data.settings;
 		const rankInfo = rank(this.data.elo);
 
-		let description = `Rating: **${number(this.data.elo)}**\n` + `Highest: **${number(this.data.elo_highest)}**\n\n` + `Rank: **${rankInfo.name}**\n` + `${createBar(rankInfo.progress, 10)}\n` + `**${number(rankInfo.remaining)} Rating** remaining to rank up\n\n`;
+		let description = `${this.data.coins}${pitacoin}\n\n`;
+		description += `Rating: **${number(this.data.elo)}**\n` + `Highest: **${number(this.data.elo_highest)}**\n\n` + `Rank: **${rankInfo.name}**\n` + `${createBar(rankInfo.progress, 10)}\n` + `**${number(rankInfo.remaining)} Rating** remaining to rank up\n\n`;
 
 		if (s.career === "all" || peek) {
 			const winrate = Math.round((100 * this.data.wins) / (this.data.wins + this.data.losses)) || 0;
@@ -25,7 +26,7 @@ export class User {
 		}
 
 		if (this.data.banned > now()) {
-			description += `⚠️ Player banned from ranked play for **${duration((this.data.banned - now()) * 1000)}**`;
+			description += `⚠️ Player banned from ranked play for **${duration((this.data.banned - now()) * 1000)}**\n\n`;
 		}
 
 		const reply = new Reply({

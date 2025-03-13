@@ -6,6 +6,7 @@ import { Commands } from "@utils/commands";
 import { DB, GeneralHandler } from "@utils/db";
 import { Duel } from "@utils/duel";
 import { Cards } from "@utils/cards";
+import { Shop } from "@utils/shop";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -24,7 +25,10 @@ client.once("ready", async () => {
 	await DB.connect();
 	await GeneralHandler.fetch();
 	Cards.refresh();
+	Shop.refresh();
+
 	Commands.init(commands);
+	await Commands.deploy(client);
 
 	console.log(`Logged in as ${client.user?.username}!`);
 });
@@ -42,6 +46,15 @@ client.on("interactionCreate", async (interaction) => {
 		if (Duel.list.has(interaction.message.id)) {
 			const duel = Duel.list.get(interaction.message.id);
 			duel?.handle(interaction);
+		}
+	} else if (interaction.isAutocomplete()) {
+		const command = Commands.list.get(interaction.commandName);
+
+		try {
+			if (!command?.autocomplete) throw new Error("Autocomplete error");
+			await command.autocomplete(interaction);
+		} catch (error) {
+			console.error(error);
 		}
 	}
 });
