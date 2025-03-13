@@ -31,7 +31,7 @@ export class Reply {
 		let reply = new Reply();
 		reply.addEmbed({
 			color: colors.green,
-			description: `<:em:744576203590991906> ${description}`,
+			description: `<:em:744576203590991906>⠀${description}`,
 		});
 		return reply;
 	}
@@ -40,7 +40,7 @@ export class Reply {
 		let reply = new Reply();
 		reply.addEmbed({
 			color: colors.red,
-			description: `<:em:744576222276747265> ${description}`,
+			description: `<:em:744576222276747265>⠀${description}`,
 		});
 		return reply;
 	}
