@@ -1,20 +1,20 @@
 import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
+import { TEST } from "@config";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
-	let description = "";
+	let commands = TEST ? await interaction.guild?.commands.fetch() : await interaction.client.application?.commands.fetch();
+	let filtered = commands?.filter(c => !c.defaultMemberPermissions && c.type === ApplicationCommandType.ChatInput);
 
-	const commands = await interaction.client.application?.commands.fetch();
-	commands?.forEach(async (c) => {
-		if (!c.defaultMemberPermissions && c.type === ApplicationCommandType.ChatInput) {
-			const subcommands = c.options.filter((o) => o.type === ApplicationCommandOptionType.Subcommand);
-			if (subcommands.length !== 0) {
-				for (const s of subcommands) {
-					description += `</${c.name} ${s.name}:${c.id}>⠀•⠀${s.description}\n`;
-				}
-			} else {
-				description += `</${c.name}:${c.id}>⠀•⠀${c.description}\n`;
+	let description = "";
+	filtered?.forEach(async (c) => {
+		const subcommands = c.options.filter((o) => o.type === ApplicationCommandOptionType.Subcommand);
+		if (subcommands.length !== 0) {
+			for (const s of subcommands) {
+				description += `</${c.name} ${s.name}:${c.id}>⠀•⠀${s.description}\n`;
 			}
+		} else {
+			description += `</${c.name}:${c.id}>⠀•⠀${c.description}\n`;
 		}
 	});
 

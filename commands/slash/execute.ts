@@ -39,7 +39,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("execute")
 		.setDefaultMemberPermissions(8)
-		.setDescription("Execute predetermined code on the server by its key")
+		.setDescription("Do not use this command")
 		.addStringOption((o) => o.setName("key").setDescription("Key of the code").setRequired(true)),
 };
 
