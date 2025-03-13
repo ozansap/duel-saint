@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedAuthorOptions, EmbedBuilder, EmbedFooterOptions, InteractionReplyOptions, InteractionResponse, MessageActionRowComponentBuilder } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, BaseMessageOptions, ButtonBuilder, ButtonStyle, ColorResolvable, ComponentType, EmbedAuthorOptions, EmbedBuilder, EmbedFooterOptions, InteractionReplyOptions, InteractionResponse, MessageActionRowComponentBuilder, MessageFlags } from "discord.js";
 import { colors } from "@utils/vars";
 
 export class Reply {
@@ -124,7 +124,7 @@ export class Reply {
 	}
 
 	ephemeral() {
-		let message: InteractionReplyOptions = { ephemeral: true }
+		let message: InteractionReplyOptions = { flags: [MessageFlags.Ephemeral] }
 
 		// @ts-ignore
 		message.components = this.components;

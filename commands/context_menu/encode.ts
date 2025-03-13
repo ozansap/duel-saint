@@ -51,7 +51,8 @@ const execute = async (interaction: MessageContextMenuCommandInteraction) => {
 	let offset = 0;
 	collector.on("collect", async (i) => {
 		if (i.customId === "see_code") {
-			i.reply({ content: code, ephemeral: true });
+			let reply = new Reply().setContent(code);;
+			i.reply(reply.ephemeral());
 		} else if (i.customId === "offset_next") {
 			code = encode(deck, ++offset);
 			i.update(new Reply({ title, description, footer: { text: code } }).addComponents([b_offset, b_code]).visible());

@@ -49,7 +49,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let offset = 0;
 		collector.on("collect", async (i) => {
 			if (i.customId === "see_code") {
-				i.reply({ content: code, ephemeral: true });
+				let reply = new Reply().setContent(code);
+				i.reply(reply.ephemeral());
 			} else if (i.customId === "offset_next") {
 				code = encode(deck, ++offset);
 				i.update(new Reply({ title, description, footer: { text: code } }).addComponents([b_offset, b_code]).visible());
@@ -69,14 +70,12 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 			return interaction.reply(reply.ephemeral());
 		}
 
-		await interaction.deferReply();
-
 		let deck = decode_result.data;
 
 		let toText_result = toText(deck);
 		if (toText_result.error) {
 			const reply = Reply.error(toText_result.error.message);
-			return interaction.editReply(reply.visible());
+			return interaction.reply(reply.visible());
 		}
 
 		let lines = toText_result.data.split("\n");
@@ -84,7 +83,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		let description = lines.join("\n");
 
 		let reply = new Reply({ title, description, footer: { text: code } }).visible();
-		return await interaction.editReply(reply);
+		return await interaction.reply(reply);
 	} else if (subcommand === "image") {
 		let code = interaction.options.getString("deck_code", true);
 
