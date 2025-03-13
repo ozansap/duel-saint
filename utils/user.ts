@@ -4,7 +4,7 @@ import { createBar, number, rank } from "@utils/num";
 import { Reply } from "@utils/reply";
 import { date, duration, now, year } from "@utils/time";
 import { DuelData, UserData } from "@utils/types";
-import { events, pitacoin, seasons } from "@utils/vars";
+import { events, currency, seasons } from "@utils/vars";
 
 export class User {
 	constructor(data: UserData) {
@@ -15,7 +15,7 @@ export class User {
 		const s = this.data.settings;
 		const rankInfo = rank(this.data.elo);
 
-		let description = `${this.data.coins}${pitacoin}\n\n`;
+		let description = `**${this.data.coins}**${currency}\n\n`;
 		description += `Rating: **${number(this.data.elo)}**\n` + `Highest: **${number(this.data.elo_highest)}**\n\n` + `Rank: **${rankInfo.name}**\n` + `${createBar(rankInfo.progress, 10)}\n` + `**${number(rankInfo.remaining)} Rating** remaining to rank up\n\n`;
 
 		if (s.career === "all" || peek) {

@@ -1,6 +1,6 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
-import { pitacoin } from "@utils/vars";
+import { currency } from "@utils/vars";
 import { Shop } from "@utils/shop";
 import { UserHandler } from "@utils/db";
 
@@ -8,7 +8,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
 
   if (subcommand === "list") {
-    let description = Shop.items.map((item) => `${item.cost}${pitacoin} - **${item.name}**`).join("\n");
+    let description = Shop.items.map((item) => `${item.cost}${currency}⠀•⠀**${item.name}**`).join("\n");
     let reply = Reply.info(description || "Shop is empty");
     interaction.reply(reply.visible());
   } else if (subcommand === "buy") {
@@ -30,7 +30,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
     await userHandler.coins_add(-item.cost).update(interaction.user.tag);
 
-    let reply = Reply.success(`You have bought **${item.name}** for ${item.cost} ${pitacoin}`);
+    let reply = Reply.success(`You have bought **${item.name}** for **${item.cost}**${currency}`);
     interaction.reply(reply.visible());
   }
 };
