@@ -3,6 +3,7 @@ import { Reply } from "@utils/reply";
 import { currency } from "@utils/vars";
 import { Shop } from "@utils/shop";
 import { UserHandler } from "@utils/db";
+import { TEST } from "@config";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
@@ -26,6 +27,17 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     if (userData.coins < item.cost) {
       let reply = Reply.error("You don't have enough coins to buy this item");
       return interaction.reply(reply.ephemeral());
+    }
+
+    let tags = item.tags.map((value) => Shop.tags.find((tag) => tag.value === value && !tag.is_filter)).filter((tag) => tag !== undefined);
+    let registrations = Object.keys(userData.registrations)
+    for (let tag of tags) {
+      if (!registrations.includes(tag.value)) {
+        let commands = TEST ? await interaction.guild?.commands.fetch() : await interaction.client.application?.commands.fetch();
+        let c = commands?.find(c => c.name === "register");
+        let reply = Reply.error(`You don't have a registered **${tag.name}**\nPlease register it with </${c?.name}:${c?.id}>`);
+        return interaction.reply(reply.ephemeral());
+      }
     }
 
     await userHandler.coins_add(-item.cost).update(interaction.user.tag);

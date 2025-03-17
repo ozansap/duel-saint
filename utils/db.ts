@@ -1,7 +1,7 @@
 import { Snowflake } from "discord.js";
 import { Collection, MongoClient, ObjectId, OptionalId } from "mongodb";
 import { MONGO_URI, MONGO_DB_NAME } from "@config";
-import { DuelData, GeneralData, SeasonalProfile, UserData } from "@utils/types";
+import { DuelData, GeneralData, OrderData, SeasonalProfile, UserData } from "@utils/types";
 import { now, year } from "@utils/time";
 import { seasons } from "@utils/vars";
 
@@ -16,6 +16,7 @@ const userData_default = {
 export class DB {
 	static users: Collection<OptionalId<UserData>>;
 	static duels: Collection<DuelData>;
+	static orders: Collection<OrderData>;
 	static general: Collection<GeneralData>;
 	static mongoClient = new MongoClient(MONGO_URI);
 
@@ -54,6 +55,7 @@ export class UserHandler {
 				career: "all",
 			},
 			events: {},
+			registrations: {},
 		};
 		this.stages = [];
 		this.userID = userID;
@@ -320,6 +322,15 @@ export class UserHandler {
 		});
 		return this;
 	}
+
+	registrations_set(registrations: UserData["registrations"]): UserHandler {
+		this.stages.push({
+			$set: {
+				registrations: registrations,
+			},
+		});
+		return this;
+	}
 }
 
 export class DuelHandler {
@@ -365,6 +376,7 @@ export class GeneralHandler {
 		shop: {
 			enabled: true,
 			message: "The shop is disabled right now",
+			tags: [],
 			items: [],
 		}
 	};
@@ -406,8 +418,31 @@ export class GeneralHandler {
 	}
 }
 
-export class PurchaseHandler {
+export class OrderHandler {
+	data: OrderData | null;
+	id: string;
 
+	constructor(id: string) {
+		this.data = null;
+		this.id = id;
+	}
+
+	static async create(data: OrderData) {
+		await DB.orders.insertOne(data);
+	}
+
+	async fetch() {
+		this.data = await DB.orders.findOne({ _id: new ObjectId(this.id) });
+		return this.data;
+	}
+
+	async update(data: OrderData) {
+		DB.orders.findOneAndReplace({ _id: new ObjectId(this.id) }, data);
+	}
+
+	async close() {
+
+	}
 }
 
 export class Leaderboard {

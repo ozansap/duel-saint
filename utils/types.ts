@@ -8,6 +8,9 @@ export type UserData = {
 	last?: number;
 
 	coins: number;
+	registrations: {
+		[registration: string]: string;
+	};
 
 	wins: number;
 	losses: number;
@@ -61,15 +64,32 @@ export type GeneralData = {
 	shop: {
 		enabled: boolean;
 		message: string;
+		tags: ItemTag[]
 		items: ShopItem[];
 	}
 };
+
+export type ItemTag = {
+	name: string,
+	value: string,
+	is_filter: boolean,
+}
 
 export type ShopItem = {
 	name: string,
 	cost: number,
 	description?: string,
 	tags: string[],
+}
+
+export type OrderData = {
+	_id?: ObjectId;
+	user: Snowflake;
+	item: string;
+	details?: string;
+	tags?: string[];
+	createdAt: number;
+	closedAt?: number;
 }
 
 export type RankInfo = {

@@ -1,23 +1,30 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, ModalBuilder, SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuComponent, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, ModalBuilder, SlashCommandBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { Reply } from "@utils/reply";
 import { Shop } from "@utils/shop";
 import { number } from "@utils/num";
 
-const description = (): string => {
-  return `Shop Item Count: **${Shop.items.length}**\n\n` + `Item Purchase: **${Shop.enabled ? "Enabled" : "Disabled"}**\n` + `Disabled Shop Message:\n\`${Shop.message}\``;;
+const create_description = (): string => {
+  return `Shop Item Count: **${Shop.items.length}**\nRegistration Tag Count: **${Shop.tags.filter((t) => !t.is_filter).length}**\nFilter Tag Count: **${Shop.tags.filter((t) => t.is_filter).length}**\n\n` + `Item Purchase: **${Shop.enabled ? "Enabled" : "Disabled"}**\n` + `Disabled Shop Message:\n\`${Shop.message}\``;;
 };
 
-const execute = async (interaction: ChatInputCommandInteraction) => {
-  const b_add = new ButtonBuilder().setLabel("Add Item").setStyle(ButtonStyle.Primary).setCustomId("add");
-  const b_remove = new ButtonBuilder().setLabel("Remove Item").setStyle(ButtonStyle.Primary).setCustomId("remove");
+const create_reply = (): Reply => {
+  const b_add = new ButtonBuilder().setLabel("Add Item").setStyle(ButtonStyle.Success).setCustomId("add");
+  const b_remove = new ButtonBuilder().setLabel("Remove Item").setStyle(ButtonStyle.Danger).setCustomId("remove");
   const b_import = new ButtonBuilder().setLabel("Import Items").setStyle(ButtonStyle.Secondary).setCustomId("import");
   const b_export = new ButtonBuilder().setLabel("Export Items").setStyle(ButtonStyle.Secondary).setCustomId("export");
   const b_enable = new ButtonBuilder().setLabel("Enable").setStyle(ButtonStyle.Success).setCustomId("enable");
   const b_disable = new ButtonBuilder().setLabel("Disable").setStyle(ButtonStyle.Danger).setCustomId("disable");
   const b_message = new ButtonBuilder().setLabel("Edit Message").setStyle(ButtonStyle.Secondary).setCustomId("message");
+  const b_tag_create = new ButtonBuilder().setLabel("Create Tag").setStyle(ButtonStyle.Success).setCustomId("tag_create");
+  const b_tag_remove = new ButtonBuilder().setLabel("Remove Tag").setStyle(ButtonStyle.Danger).setCustomId("tag_remove");
+  const b_show_items = new ButtonBuilder().setLabel("Show Items").setStyle(ButtonStyle.Secondary).setCustomId("show_items");
+  const b_show_tags = new ButtonBuilder().setLabel("Show Tags").setStyle(ButtonStyle.Secondary).setCustomId("show_tags");
 
-  let reply = Reply.info(description()).addComponents([b_add, b_remove]).addComponents([b_enable, b_disable, b_message]);
-  let message = await interaction.reply(reply.visible());
+  return Reply.info(create_description()).addComponents([b_enable, b_disable, b_message]).addComponents([b_add, b_remove, b_show_items]).addComponents([b_tag_create, b_tag_remove, b_show_tags])
+};
+
+const execute = async (interaction: ChatInputCommandInteraction) => {
+  let message = await interaction.reply(create_reply().visible());
 
   let collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
@@ -55,27 +62,24 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         let cost = parseInt(submit.fields.getTextInputValue("cost"));
         if (isNaN(cost)) {
           let reply = Reply.error("Cost must be a number");
-          await submit.reply(reply.ephemeral());
-          return;
+          return await submit.reply(reply.ephemeral());
         }
 
-        Shop.add({
+        Shop.add_item({
           cost,
           name: submit.fields.getTextInputValue("name"),
           description: submit.fields.getTextInputValue("description"),
-          tags: submit.fields.getTextInputValue("tags").split(",").map((tag) => tag.trim()),
+          tags: submit.fields.getTextInputValue("tags").split(",").map((tag) => tag.trim()).filter((tag) => tag !== ""),
         });
 
+        Shop.items.sort((a, b) => b.cost - a.cost);
         await Shop.save();
-
-        let reply = Reply.info(description()).addComponents([b_add, b_remove]).addComponents([b_enable, b_disable, b_message]);
-        await submit.update(reply.visible());
+        await submit.update(create_reply().visible());
       }).catch(() => { });
     } else if (i.customId === "remove") {
       if (Shop.items.length === 0) {
         let reply = Reply.error("Shop is empty");
-        i.reply(reply.ephemeral());
-        return;
+        return await i.reply(reply.ephemeral());
       }
 
       let max = Shop.items.length > 25 ? 25 : Shop.items.length;
@@ -87,14 +91,13 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       selectMessage.awaitMessageComponent<ComponentType.StringSelect>({
         time: 5 * 60 * 1000,
       }).then(async (submit) => {
-        Shop.remove(submit.values);
+        Shop.remove_items(submit.values);
         await Shop.save();
 
-        let reply = Reply.info(description()).addComponents([b_add, b_remove]).addComponents([b_enable, b_disable, b_message]);
-        await message.edit(reply.visible());
+        await message.edit(create_reply().visible());
         await submit.update(Reply.success(`Removed ${number(submit.values.length, "item")}`).setContent(" ").removeComponents().visible());
       }).catch(() => {
-        selectMessage.delete();
+        selectMessage.delete().catch(console.error);
       });
     } else if (i.customId === "message") {
       let input = new TextInputBuilder().setCustomId("message").setLabel("Message").setStyle(TextInputStyle.Short).setPlaceholder("Message to be displayed when a player tries to buy an item when shop is disabled").setRequired(true);
@@ -110,15 +113,98 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         Shop.message = submit.fields.getTextInputValue("message");
         await Shop.save();
 
-        let reply = Reply.info(description()).addComponents([b_add, b_remove]).addComponents([b_enable, b_disable, b_message]);
-        await submit.update(reply.visible());
+        await submit.update(create_reply().visible());
       }).catch(() => { });
+    } else if (i.customId === "tag_create") {
+      let inputs: TextInputBuilder[] = [];
+      let rows: ActionRowBuilder<TextInputBuilder>[] = [];
+
+      inputs.push(new TextInputBuilder().setCustomId("name").setLabel("Tag Name").setStyle(TextInputStyle.Short).setPlaceholder("Name of the tag that will be visible").setRequired(true));
+      inputs.push(new TextInputBuilder().setCustomId("value").setLabel("Tag Value").setStyle(TextInputStyle.Short).setPlaceholder("Internal name of the tag that will be used when creating shop items").setRequired(true));
+      inputs.push(new TextInputBuilder().setCustomId("registration").setLabel("Requires Registration").setStyle(TextInputStyle.Short).setPlaceholder("Whether the user will have to register some information to buy an item with this tag").setRequired(false));
+
+      inputs.forEach((input) => {
+        rows.push(new ActionRowBuilder<TextInputBuilder>().addComponents(input));
+      });
+
+      let modal = new ModalBuilder().setCustomId("modal").setTitle("Create Shop Item Tag").addComponents(rows);
+      await i.showModal(modal);
+
+      i.awaitModalSubmit({
+        time: 10 * 60 * 1000,
+      }).then(async (submit) => {
+        if (!submit.isFromMessage()) return;
+
+        let tag_name = submit.fields.getTextInputValue("name");
+        let tag_value = submit.fields.getTextInputValue("value");
+
+        if (Shop.tags.some((tag) => tag.value === tag_value || tag.name === tag_name)) {
+          let reply = Reply.error("A tag with the same name or value already exists");
+          return await submit.reply(reply.ephemeral());
+        }
+
+        Shop.add_tag({
+          name: submit.fields.getTextInputValue("name"),
+          value: submit.fields.getTextInputValue("value"),
+          is_filter: !Boolean(submit.fields.getTextInputValue("registration")),
+        });
+
+        await Shop.save();
+        await submit.update(create_reply().visible());
+      }).catch(() => { });
+    } else if (i.customId === "tag_remove") {
+      if (Shop.tags.length === 0) {
+        let reply = Reply.error("There are no tags to remove");
+        return await i.reply(reply.ephemeral());
+      }
+
+      let max = Shop.tags.length > 25 ? 25 : Shop.tags.length;
+      let select = new StringSelectMenuBuilder().setCustomId("select").addOptions(Shop.tags.map((tag) => ({ label: tag.name, value: tag.value }))).setMaxValues(max);
+      let reply = new Reply().setContent("Select tags to remove:").addComponents([select]);
+      await i.reply(reply.ephemeral());
+      let selectMessage = await i.fetchReply();
+
+      selectMessage.awaitMessageComponent<ComponentType.StringSelect>({
+        time: 5 * 60 * 1000,
+      }).then(async (submit) => {
+        Shop.remove_tags(submit.values);
+        await Shop.save();
+
+        await message.edit(create_reply().visible());
+        await submit.update(Reply.success(`Removed ${number(submit.values.length, "tag")}`).setContent(" ").removeComponents().visible());
+      }).catch(() => {
+        selectMessage.delete().catch(console.error);
+      });
+    } else if (i.customId === "show_items") {
+      if (Shop.items.length === 0) {
+        let reply = Reply.info("Shop is empty");
+        return await i.reply(reply.ephemeral());
+      }
+
+      let description = "";
+      for (let item of Shop.items) {
+        description += item.tags.length > 0 ? `${item.cost}⠀•⠀**${item.name}**⠀•⠀\`${item.tags.join(", ")}\`\n` : `${item.cost}⠀•⠀**${item.name}**\n`;
+      }
+
+      let reply = Reply.info(description);
+      await i.reply(reply.visible());
+    } else if (i.customId === "show_tags") {
+      if (Shop.tags.length === 0) {
+        let reply = Reply.info("There are no tags");
+        return await i.reply(reply.ephemeral());
+      }
+
+      let description = "";
+      for (let tag of Shop.tags) {
+        description += `${tag.is_filter ? "Filter" : "Registration"}⠀•⠀**${tag.name}**⠀•⠀${tag.value}\n`;
+      }
+
+      let reply = Reply.info(description);
+      await i.reply(reply.visible());
     } else {
       Shop.enabled = i.customId === "enable";
       await Shop.save();
-
-      let reply = Reply.info(description()).addComponents([b_add, b_remove]).addComponents([b_enable, b_disable, b_message]);
-      await i.update(reply.visible());
+      await i.update(create_reply().visible());
     }
 
     collector.resetTimer();
@@ -133,7 +219,7 @@ module.exports = {
   execute,
   data: new SlashCommandBuilder()
     .setName("shop-manager")
-    .setDescription("Manage shop items")
+    .setDescription("Admin dashboard for shop management")
     .setDefaultMemberPermissions(8)
     .setDMPermission(false),
 };
