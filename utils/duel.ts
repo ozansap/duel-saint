@@ -62,14 +62,14 @@ export class Duel {
 	async handle(interaction: ButtonInteraction) {
 		if (this.state === DuelState.Invitation) {
 			switch (interaction.customId) {
-				case "accept":
+				case "duel-accept":
 					if (interaction.user.id !== this.target.id) {
 						const reply = Reply.error("You are not the invited player");
 						return interaction.reply(reply.ephemeral());
 					}
 
 					return this.start(interaction);
-				case "cancel":
+				case "duel-cancel":
 					if (interaction.user.id !== this.user.id && interaction.user.id !== this.target.id) {
 						const reply = Reply.error("You are not one of the players");
 						return interaction.reply(reply.ephemeral());
@@ -85,22 +85,22 @@ export class Duel {
 
 			const opponent = this.user.id === interaction.user.id ? this.target : this.user;
 
-			const description = interaction.customId === "cancel" ? `${interaction.user} wants to cancel the duel, do you accept?` : `You selected **\`${interaction.customId}\`**, do you wish to confirm your selection?`;
+			const description = interaction.customId === "duel-cancel" ? `${interaction.user} wants to cancel the duel, do you accept?` : `You selected **\`${interaction.customId}\`**, do you wish to confirm your selection?`;
 
 			const confirmed = await this.confirmation({
 				interaction,
 				description,
-				ephemeral: interaction.customId !== "cancel",
-				recipient: interaction.customId === "cancel" ? opponent.id : interaction.user.id,
+				ephemeral: interaction.customId !== "duel-cancel",
+				recipient: interaction.customId === "duel-cancel" ? opponent.id : interaction.user.id,
 			});
 
 			if (!confirmed) return;
 
 			switch (interaction.customId) {
-				case "winner":
-				case "draw":
+				case "duel-winner":
+				case "duel-draw":
 					return this.end(interaction);
-				case "cancel":
+				case "duel-cancel":
 					return this.cancel(interaction);
 			}
 		} else if (this.state === DuelState.Ended) {
@@ -119,7 +119,7 @@ export class Duel {
 			if (!confirmed) return;
 
 			switch (interaction.customId) {
-				case "dispute":
+				case "duel-dispute":
 					return this.dispute(interaction);
 			}
 		}
@@ -182,8 +182,8 @@ export class Duel {
 		const fields = this.fields(interaction.guild!);
 		const description = `⚠️ Once you accept this invitation, you have to play or you will be considered to have conceded`;
 
-		const button1 = new ButtonBuilder().setLabel("Accept").setStyle(ButtonStyle.Primary).setCustomId("accept");
-		const button2 = new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Secondary).setCustomId("cancel");
+		const button1 = new ButtonBuilder().setLabel("Accept").setStyle(ButtonStyle.Primary).setCustomId("duel-accept");
+		const button2 = new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Secondary).setCustomId("duel-cancel");
 
 		const options = { author: this.rematchAuthor(), title, description, fields };
 		const reply = new Reply(options).setContent(target.toString()).addComponents([button1, button2]);
@@ -272,9 +272,9 @@ export class Duel {
 		const description =
 			`You have **1 hour** to play the TCG duel\n` + `If not played, nothing changes\n` + `**Winner declares their win** by pressing the button on this message\n` + `**Anyone can declare a draw** by pressing the button on this message\n` + `Winner might have to **prove their win**, make sure to take **screenshots**\n\n` + `⚠️ Do not declare a win or a draw unless it is the result of the in game duel\n` + `⚠️ Inability to prove a win when required might result in dismissal of the duel`;
 
-		const button1 = new ButtonBuilder().setLabel("Winner").setStyle(ButtonStyle.Primary).setCustomId("winner");
-		const button2 = new ButtonBuilder().setLabel("Draw").setStyle(ButtonStyle.Primary).setCustomId("draw");
-		const button3 = new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Secondary).setCustomId("cancel");
+		const button1 = new ButtonBuilder().setLabel("Winner").setStyle(ButtonStyle.Primary).setCustomId("duel-winner");
+		const button2 = new ButtonBuilder().setLabel("Draw").setStyle(ButtonStyle.Primary).setCustomId("duel-draw");
+		const button3 = new ButtonBuilder().setLabel("Cancel").setStyle(ButtonStyle.Secondary).setCustomId("duel-cancel");
 
 		const options = { author: this.rematchAuthor(), title, description, fields };
 		const reply = new Reply(options).addComponents([button1, button2, button3]);
@@ -285,14 +285,14 @@ export class Duel {
 		clearTimeout(this.timeout);
 		this.state = DuelState.Ended;
 
-		const result = interaction.customId === "draw" ? "draw" : interaction.user.id === this.user.id ? "user" : "target";
+		const result = interaction.customId === "duel-draw" ? "draw" : interaction.user.id === this.user.id ? "user" : "target";
 		await this.payout(interaction.guild!, result);
 
 		const title = `Ranked TCG Duel Results`;
 		const fields = this.fields(interaction.guild!, true);
 		const description = `If you are one of the players and believe that the result is false, **you may dispute**\n` + `You might have to **prove your claims**\n` + `You have up to **1 hour** after the end of a duel to dispute\n\n` + `⚠️ You may be penalized if you dispute unrightfully\n` + `⚠️ You may be permanently banned if caught abusing disputes`;
 
-		const button = new ButtonBuilder().setLabel("Dispute").setStyle(ButtonStyle.Danger).setCustomId("dispute");
+		const button = new ButtonBuilder().setLabel("Dispute").setStyle(ButtonStyle.Danger).setCustomId("duel-dispute");
 
 		const options = { author: this.rematchAuthor(), title, description, fields, color: colors.green };
 		const reply = new Reply(options).addComponents([button]);

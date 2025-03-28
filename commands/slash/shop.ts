@@ -1,9 +1,10 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { currency } from "@utils/vars";
 import { Shop } from "@utils/shop";
-import { UserHandler } from "@utils/db";
-import { TEST } from "@config";
+import { OrderHandler, UserHandler } from "@utils/db";
+import { GUILD_ID, ORDER_CHANNEL_ID, TEST } from "@config";
+import { now } from "@utils/time";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
@@ -29,8 +30,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return interaction.reply(reply.ephemeral());
     }
 
+    let details = "";
     let tags = item.tags.map((value) => Shop.tags.find((tag) => tag.value === value && !tag.is_filter)).filter((tag) => tag !== undefined);
-    let registrations = Object.keys(userData.registrations)
+    let registrations = Object.keys(userData.registrations);
     for (let tag of tags) {
       if (!registrations.includes(tag.value)) {
         let commands = TEST ? await interaction.guild?.commands.fetch() : await interaction.client.application?.commands.fetch();
@@ -38,9 +40,31 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         let reply = Reply.error(`You don't have a registered **${tag.name}**\nPlease register it with </${c?.name}:${c?.id}>`);
         return interaction.reply(reply.ephemeral());
       }
+
+      details += `**${tag.name}**: ${userData.registrations[tag.value]}\n`;
     }
 
     await userHandler.coins_add(-item.cost).update(interaction.user.tag);
+
+    let order_channel = await (await interaction.client.guilds.fetch(GUILD_ID)).channels.fetch(ORDER_CHANNEL_ID);
+    if (!order_channel || !order_channel.isTextBased()) {
+      let reply = Reply.error("Something went wrong");
+      return interaction.reply(reply.ephemeral());
+    }
+
+    const b_fulfill = new ButtonBuilder().setLabel("Mark as Fulfilled").setStyle(ButtonStyle.Success).setCustomId("order-fulfill");
+    const b_refund = new ButtonBuilder().setLabel("Refund").setStyle(ButtonStyle.Danger).setCustomId("order-refund");
+    let order_reply = new Reply({ title: "New Purchase", description: `${interaction.user}\n**${item.name}**\n<t:${now()}:R>\n\n${details}` }).addComponents([b_fulfill, b_refund]);
+    let order_message = await order_channel.send(order_reply.visible());
+
+    OrderHandler.create({
+      user: interaction.user.id,
+      message: order_message.id,
+      item: item.name,
+      cost: item.cost,
+      tags: item.tags,
+      createdAt: now(),
+    });
 
     let reply = Reply.success(`You have bought **${item.name}** for **${item.cost}**${currency}`);
     interaction.reply(reply.visible());

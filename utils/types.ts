@@ -85,11 +85,15 @@ export type ShopItem = {
 export type OrderData = {
 	_id?: ObjectId;
 	user: Snowflake;
+	message: Snowflake;
+	reminder?: Snowflake;
 	item: string;
+	cost: number;
 	details?: string;
 	tags?: string[];
 	createdAt: number;
 	closedAt?: number;
+	result?: "fulfilled" | "refunded";
 }
 
 export type RankInfo = {

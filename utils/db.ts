@@ -26,6 +26,7 @@ export class DB {
 
 		DB.users = database.collection("users");
 		DB.duels = database.collection("duels");
+		DB.orders = database.collection("orders");
 		DB.general = database.collection("general");
 	}
 }
@@ -420,28 +421,35 @@ export class GeneralHandler {
 
 export class OrderHandler {
 	data: OrderData | null;
-	id: string;
+	messageID: string;
 
-	constructor(id: string) {
+	constructor(messageID: string) {
 		this.data = null;
-		this.id = id;
+		this.messageID = messageID;
 	}
 
 	static async create(data: OrderData) {
 		await DB.orders.insertOne(data);
 	}
 
+	static async find_all(userID: string) {
+		const cursor = DB.orders
+			.find({ user: userID, closedAt: { $exists: false } })
+			.sort({ createdAt: -1 })
+
+		let data = await cursor.toArray()
+		cursor.close();
+
+		return data;
+	}
+
 	async fetch() {
-		this.data = await DB.orders.findOne({ _id: new ObjectId(this.id) });
+		this.data = await DB.orders.findOne({ $or: [{ message: this.messageID }, { reminder: this.messageID }] });
 		return this.data;
 	}
 
 	async update(data: OrderData) {
-		DB.orders.findOneAndReplace({ _id: new ObjectId(this.id) }, data);
-	}
-
-	async close() {
-
+		DB.orders.findOneAndReplace({ $or: [{ message: this.messageID }, { reminder: this.messageID }] }, data);
 	}
 }
 

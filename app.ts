@@ -7,6 +7,8 @@ import { DB, GeneralHandler } from "@utils/db";
 import { Duel } from "@utils/duel";
 import { Cards } from "@utils/cards";
 import { Shop } from "@utils/shop";
+import { Order } from "@utils/order";
+import { Reply } from "@utils/reply";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -43,7 +45,14 @@ client.on("interactionCreate", async (interaction) => {
 			interaction.reply("There was an error trying to execute that command\nContact `swagnemite.` if you keep getting this error");
 		}
 	} else if (interaction.isButton()) {
-		if (Duel.list.has(interaction.message.id)) {
+		if (interaction.customId.startsWith("order-")) {
+			if (!interaction.memberPermissions?.has("Administrator")) {
+				let reply = Reply.error("You don't have the permission to do that little bro...");
+				return interaction.reply(reply.ephemeral());
+			}
+
+			Order.handle(interaction);
+		} else if (interaction.customId.startsWith("duel-")) {
 			const duel = Duel.list.get(interaction.message.id);
 			duel?.handle(interaction);
 		}
