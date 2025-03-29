@@ -10,5 +10,6 @@ export const GUILD_ID: string = TEST ? process.env.GUILD_ID_TEST : process.env.G
 export const DISPUTE_CATEGORY_ID: string = TEST ? process.env.DISPUTE_CATEGORY_ID_TEST : process.env.DISPUTE_CATEGORY_ID;
 export const ORDER_CHANNEL_ID: string = TEST ? process.env.ORDER_CHANNEL_ID_TEST : process.env.ORDER_CHANNEL_ID;
 export const MOD_ROLE_ID: string = TEST ? process.env.MOD_ROLE_ID_TEST : process.env.MOD_ROLE_ID;
+export const ECONOMY_ROLE_ID: string = TEST ? process.env.ECONOMY_ROLE_ID_TEST : process.env.ECONOMY_ROLE_ID;
 
 export const OWNER_ID: string = process.env.OWNER_ID;

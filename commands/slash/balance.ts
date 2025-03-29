@@ -1,35 +1,45 @@
+import { ECONOMY_ROLE_ID } from "@config";
 import { UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
 import { currency } from "@utils/vars";
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
   const user = interaction.options.getUser("user", true);
 
-  if (subcommand === "add") {
-    const amount = interaction.options.getNumber("amount", true);
-    const userHandler = new UserHandler(user.id);
-    await userHandler.coins_add(amount).update(user.tag);
-    let reply = Reply.success(`Added **${amount}**${currency} to ${user}`);
-    interaction.reply(reply.visible());
-  } else if (subcommand === "sub") {
-    const amount = interaction.options.getNumber("amount", true);
-    const userHandler = new UserHandler(user.id);
-    await userHandler.coins_add(-amount).update(user.tag);
-    let reply = Reply.success(`Removed **${amount}**${currency} from ${user}`);
-    interaction.reply(reply.visible());
-  } else if (subcommand === "set") {
-    const amount = interaction.options.getNumber("amount", true);
-    const userHandler = new UserHandler(user.id);
-    await userHandler.coins_set(amount).update(user.tag);
-    let reply = Reply.success(`${user} has **${amount}**${currency}`);
-    interaction.reply(reply.visible());
-  } else if (subcommand === "check") {
+  if (subcommand === "check") {
     const userHandler = new UserHandler(user.id);
     const userData = await userHandler.fetch();
     let reply = Reply.info(`${user} has **${userData.coins}**${currency}`);
     interaction.reply(reply.visible());
+  } else {
+    let guild = await interaction.client.guilds.fetch(interaction.guildId!);
+    let member = await guild.members.fetch(interaction.user.id);
+    if (!member.roles.cache.has(ECONOMY_ROLE_ID) && !member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+      let reply = Reply.error("You don't have the permission to do that little bro...").setContent("<@122686558422695938> LMAO LOOK AT THIS GUY!!!");
+      return interaction.reply(reply.visible());
+    }
+
+    if (subcommand === "add") {
+      const amount = interaction.options.getNumber("amount", true);
+      const userHandler = new UserHandler(user.id);
+      await userHandler.coins_add(amount).update(user.tag);
+      let reply = Reply.success(`Added **${amount}**${currency} to ${user}`);
+      interaction.reply(reply.visible());
+    } else if (subcommand === "sub") {
+      const amount = interaction.options.getNumber("amount", true);
+      const userHandler = new UserHandler(user.id);
+      await userHandler.coins_add(-amount).update(user.tag);
+      let reply = Reply.success(`Removed **${amount}**${currency} from ${user}`);
+      interaction.reply(reply.visible());
+    } else if (subcommand === "set") {
+      const amount = interaction.options.getNumber("amount", true);
+      const userHandler = new UserHandler(user.id);
+      await userHandler.coins_set(amount).update(user.tag);
+      let reply = Reply.success(`${user} has **${amount}**${currency}`);
+      interaction.reply(reply.visible());
+    }
   }
 };
 
@@ -38,7 +48,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("balance")
     .setDescription("Manage user coins")
-    .setDefaultMemberPermissions(8)
+    .setDefaultMemberPermissions(PermissionsBitField.Flags.MentionEveryone)
     .addSubcommand((sc) =>
       sc
         .setName("add")
