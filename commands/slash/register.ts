@@ -24,7 +24,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   let registrations = Object.assign({}, userData.registrations, { [tag.value]: value });
   await userHandler.registrations_set(registrations).update(interaction.user.tag);
 
-  let reply = Reply.success(`You have registered **${tag.name}** as **${value}**`);
+  let reply = Reply.success(`You registered **${tag.name}** as \`${value}\``);
   interaction.reply(reply.ephemeral());
 };
 

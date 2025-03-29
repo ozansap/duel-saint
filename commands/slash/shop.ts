@@ -14,7 +14,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     let reply = Reply.info(description || "Shop is empty");
     interaction.reply(reply.visible());
   } else if (subcommand === "buy") {
-    let item_name = interaction.options.getString("item_name", true);
+    let item_name = interaction.options.getString("item", true);
     let item = Shop.items.find((i) => i.name === item_name);
 
     if (!item) {
@@ -41,7 +41,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         return interaction.reply(reply.ephemeral());
       }
 
-      details += `**${tag.name}**: ${userData.registrations[tag.value]}\n`;
+      details += `**${tag.name}**:⠀\`${userData.registrations[tag.value]}\`\n`;
     }
 
     await userHandler.coins_add(-item.cost).update(interaction.user.tag);
@@ -54,7 +54,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
     const b_fulfill = new ButtonBuilder().setLabel("Mark as Fulfilled").setStyle(ButtonStyle.Success).setCustomId("order-fulfill");
     const b_refund = new ButtonBuilder().setLabel("Refund").setStyle(ButtonStyle.Danger).setCustomId("order-refund");
-    let order_reply = new Reply({ title: "New Purchase", description: `${interaction.user}\n**${item.name}**\n<t:${now()}:R>\n\n${details}` }).addComponents([b_fulfill, b_refund]);
+    let order_reply = new Reply({ title: "New Purchase", description: `◆⠀${interaction.user}\n◆⠀**${item.name}**\n◆⠀<t:${now()}:R>\n\n${details}` }).addComponents([b_fulfill, b_refund]);
     let order_message = await order_channel.send(order_reply.visible());
 
     OrderHandler.create({
@@ -66,7 +66,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       createdAt: now(),
     });
 
-    let reply = Reply.success(`You have bought **${item.name}** for **${item.cost}**${currency}`);
+    let reply = Reply.success(`You bought **${item.name}** for **${item.cost}**${currency}\n${details}`);
     interaction.reply(reply.visible());
   }
 };
@@ -92,6 +92,6 @@ module.exports = {
         .setName("buy")
         .setDescription("Buy an item from the shop")
         .addStringOption((o) =>
-          o.setName("item_name").setDescription("Name of the item you want to buy").setAutocomplete(true).setRequired(true))
+          o.setName("item").setDescription("Name of the item you want to buy").setAutocomplete(true).setRequired(true))
     )
 };
