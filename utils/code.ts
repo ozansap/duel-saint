@@ -9,6 +9,11 @@ const position = {
 		{ left: 515, top: 178, width: 138, height: 236 },
 		{ left: 677, top: 178, width: 138, height: 236 },
 	],
+	characters_aoc: [
+		{ left: 592, top: 231, width: 90, height: 154 },
+		{ left: 706, top: 231, width: 90, height: 154 },
+		{ left: 820, top: 231, width: 90, height: 154 },
+	],
 	actions: [
 		{ left: 254, top: 522, width: 90, height: 154 },
 		{ left: 368, top: 522, width: 90, height: 154 },
@@ -144,7 +149,12 @@ export async function fromImage(url: string): Promise<Maybe<number[]>> {
 	let actions = Cards.actions;
 	let deck: number[] = [];
 
-	for (const p of position.characters) {
+	let aoc_area = await sharp(arrayBuffer).extract({ left: 850, top: 300, width: 20, height: 20 }).ensureAlpha().raw().toBuffer();
+	let aoc_blank = await sharp("assets/aoc_blank.png").ensureAlpha().raw().toBuffer();
+	let diff = Pixelmatch(aoc_area, aoc_blank, null, 20, 20, { threshold: 0.1 });
+	let is_aoc = ratio(diff, 20, 20) > 0.1;
+
+	for (const p of is_aoc ? position.characters_aoc : position.characters) {
 		let cropped = await sharp(arrayBuffer).extract(p).ensureAlpha().raw().toBuffer();
 
 		for (let i = 0; i < characters.length; i++) {
@@ -175,12 +185,16 @@ export async function fromImage(url: string): Promise<Maybe<number[]>> {
 			let diff = Pixelmatch(cropped, img, null, p.width, p.height, { threshold: 0.1 });
 
 			let isTalent = 210000 < card.id && card.id < 230000;
-			let isFood = 333000 < card.id && card.id < 334000;
 			let isItem = 323000 < card.id && card.id < 324000;
+			let isSpecial = 330000 < card.id && card.id < 331000;
+			let isFood = 333000 < card.id && card.id < 334000;
+
+			let threshold = 0.15;
+			if (isTalent || isItem || isFood) threshold = 0.15;
+			else if (isSpecial) threshold = 0.3;
 
 			let r = ratio(diff, p.width, p.height);
-			if ((isTalent || isFood || isItem) && r > 0.2) continue;
-			else if (r > 0.3) continue;
+			if (r > threshold) continue;
 
 			index = i;
 			deck.push(card.code);

@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ButtonBuilder, ButtonStyle, ComponentType, ContextMenuCommandBuilder, MessageContextMenuCommandInteraction } from "discord.js";
+import { ApplicationCommandType, ButtonBuilder, ButtonStyle, ComponentType, ContextMenuCommandBuilder, InteractionContextType, MessageContextMenuCommandInteraction } from "discord.js";
 import { Reply } from "@utils/reply";
 import { encode, fromImage, toText } from "@utils/code";
 
@@ -69,5 +69,5 @@ module.exports = {
 	data: new ContextMenuCommandBuilder()
 		.setName("Encode Deck Image")
 		.setType(ApplicationCommandType.Message)
-		.setContexts(0, 1)
+		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
 };
