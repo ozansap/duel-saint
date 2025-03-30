@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { currency } from "@utils/vars";
 import { Shop } from "@utils/shop";
@@ -22,6 +22,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return interaction.reply(reply.ephemeral());
     }
 
+    if (!Shop.enabled) {
+      let reply = Reply.error(Shop.message);
+      return interaction.reply(reply.ephemeral());
+    }
+
     let userHandler = new UserHandler(interaction.user.id);
     let userData = await userHandler.fetch();
 
@@ -31,9 +36,10 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     }
 
     let details = "";
-    let tags = item.tags.map((value) => Shop.tags.find((tag) => tag.value === value && !tag.is_filter)).filter((tag) => tag !== undefined);
     let registrations = Object.keys(userData.registrations);
-    for (let tag of tags) {
+
+    let required_tags = item.tags.map((value) => Shop.tags.find((tag) => tag.value === value && tag.type === "registry")).filter((tag) => tag !== undefined);
+    for (let tag of required_tags) {
       if (!registrations.includes(tag.value)) {
         let commands = TEST ? await interaction.guild?.commands.fetch() : await interaction.client.application?.commands.fetch();
         let c = commands?.find(c => c.name === "register");
@@ -44,13 +50,54 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       details += `**${tag.name}**:⠀\`${userData.registrations[tag.value]}\`\n`;
     }
 
-    await userHandler.coins_add(-item.cost).update(interaction.user.tag);
+    let submit_interaction;
+    let group_tags = item.tags.map((value) => Shop.tags.find((tag) => tag.value === value && tag.type === "group")).filter((tag) => tag !== undefined);
+    for (let tag of group_tags) {
+      let child_tags = Shop.tags.filter((t) => t.type === "registry" && t.value.startsWith(tag.value));
+      let registered_tags = child_tags.filter((t) => registrations.includes(t.value));
+
+      if (registered_tags.length === 0) {
+        let commands = TEST ? await interaction.guild?.commands.fetch() : await interaction.client.application?.commands.fetch();
+        let c = commands?.find(c => c.name === "register");
+        let reply = Reply.error(`You don't have a registered **${tag.name}**\nPlease register it with </${c?.name}:${c?.id}>`);
+        return interaction.reply(reply.ephemeral());
+      } else if (registered_tags.length === 1) {
+        details += `**${registered_tags[0].name}**:⠀\`${userData.registrations[registered_tags[0].value]}\`\n`;
+      } else {
+        let select = new StringSelectMenuBuilder().setCustomId("select").addOptions(registered_tags.map((tag) => ({ label: tag.name, value: tag.value }))).setMinValues(1).setMaxValues(1);
+        let reply = new Reply().setContent(`You have multiple registered **${tag.name}**. Please select one:`).addComponents([select]);
+        await interaction.reply(reply.visible());
+        let complete = false;
+
+        let message = await interaction.fetchReply();
+
+        await message.awaitMessageComponent<ComponentType.StringSelect>({
+          filter: (i) => i.user.id === interaction.user.id,
+          time: 5 * 60 * 1000,
+        }).then(async (submit) => {
+          submit_interaction = submit;
+          complete = true;
+          let tag_value = submit.values[0];
+          let tag_name = registered_tags.find((t) => t.value === tag_value)?.name;
+          details += `**${tag_name}**:⠀\`${userData.registrations[tag_value]}\`\n`;
+        }).catch(() => {
+          message.delete().catch(console.error);
+        });
+
+        if (!complete) {
+          let reply = Reply.error("This session is over, you can start a new one").setContent(" ").removeComponents();
+          return interaction.editReply(reply.visible());
+        }
+      }
+    }
 
     let order_channel = await (await interaction.client.guilds.fetch(GUILD_ID)).channels.fetch(ORDER_CHANNEL_ID);
     if (!order_channel || !order_channel.isTextBased()) {
-      let reply = Reply.error("Something went wrong");
-      return interaction.reply(reply.ephemeral());
+      let reply = Reply.error("Something went wrong").setContent(" ").removeComponents();
+      return interaction.replied ? interaction.editReply(reply.visible()) : interaction.reply(reply.ephemeral());
     }
+
+    await userHandler.coins_add(-item.cost).update(interaction.user.tag);
 
     const b_fulfill = new ButtonBuilder().setLabel("Mark as Fulfilled").setStyle(ButtonStyle.Success).setCustomId("order-fulfill");
     const b_refund = new ButtonBuilder().setLabel("Refund").setStyle(ButtonStyle.Danger).setCustomId("order-refund");
@@ -66,8 +113,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       createdAt: now(),
     });
 
-    let reply = Reply.success(`You bought **${item.name}** for **${item.cost}**${currency}\n${details}`);
-    interaction.reply(reply.visible());
+    let reply = Reply.success(`You bought **${item.name}** for **${item.cost}**${currency}\n${details}`).setContent(" ").removeComponents();
+    interaction.replied ? interaction.editReply(reply.visible()) : interaction.reply(reply.visible());
   }
 };
 

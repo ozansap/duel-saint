@@ -72,7 +72,7 @@ export type GeneralData = {
 export type ItemTag = {
 	name: string,
 	value: string,
-	is_filter: boolean,
+	type: "filter" | "registry" | "group",
 }
 
 export type ShopItem = {

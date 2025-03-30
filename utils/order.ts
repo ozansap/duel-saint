@@ -18,9 +18,6 @@ export class Order {
       let user = await interaction.client.users.fetch(orderData.user);
       user.send(Reply.success(`Your order has been fulfilled: **${orderData.item}**`).visible());
       orderHandler.update(Object.assign(orderData, { closedAt: now(), result: "fulfilled" }));
-
-      let reply = Reply.success("Order marked as fulfilled");
-      interaction.reply(reply.ephemeral());
     } else if (interaction.customId === "order-refund") {
       let user = await interaction.client.users.fetch(orderData.user);
       user.send(Reply.error(`Your order has been refunded: **${orderData.item}**`).visible());
@@ -28,9 +25,6 @@ export class Order {
 
       let userHandler = new UserHandler(orderData.user);
       await userHandler.coins_add(orderData.cost).update(interaction.user.tag);
-
-      let reply = Reply.success("Order marked as refunded");
-      interaction.reply(reply.ephemeral());
     }
 
     let order_channel = await (await interaction.client.guilds.fetch(GUILD_ID)).channels.fetch(ORDER_CHANNEL_ID) as TextChannel;

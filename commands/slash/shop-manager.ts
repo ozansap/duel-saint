@@ -4,7 +4,7 @@ import { Shop } from "@utils/shop";
 import { number } from "@utils/num";
 
 const create_description = (): string => {
-  return `Shop Item Count: **${Shop.items.length}**\nRegistration Tag Count: **${Shop.tags.filter((t) => !t.is_filter).length}**\nFilter Tag Count: **${Shop.tags.filter((t) => t.is_filter).length}**\n\n` + `Item Purchase: **${Shop.enabled ? "Enabled" : "Disabled"}**\n` + `Disabled Shop Message:\n\`${Shop.message}\``;;
+  return `Shop Item Count: **${Shop.items.length}**\nShop Tag Count: **${Shop.tags.length}**\n\n` + `Item Purchase: **${Shop.enabled ? "Enabled" : "Disabled"}**\n` + `Disabled Shop Message:\n\`${Shop.message}\``;;
 };
 
 const create_reply = (): Reply => {
@@ -120,8 +120,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       let rows: ActionRowBuilder<TextInputBuilder>[] = [];
 
       inputs.push(new TextInputBuilder().setCustomId("name").setLabel("Tag Name").setStyle(TextInputStyle.Short).setPlaceholder("Name of the tag that will be visible").setRequired(true));
-      inputs.push(new TextInputBuilder().setCustomId("value").setLabel("Tag Value").setStyle(TextInputStyle.Short).setPlaceholder("Internal name of the tag that will be used when creating shop items").setRequired(true));
-      inputs.push(new TextInputBuilder().setCustomId("registration").setLabel("Requires Registration").setStyle(TextInputStyle.Short).setPlaceholder("Whether the user will have to register some information to buy an item with this tag").setRequired(false));
+      inputs.push(new TextInputBuilder().setCustomId("value").setLabel("Tag Value").setStyle(TextInputStyle.Short).setPlaceholder("Internal name of the tag").setRequired(true));
+      inputs.push(new TextInputBuilder().setCustomId("type").setLabel("Type").setStyle(TextInputStyle.Short).setPlaceholder("Type of the tag").setRequired(true));
 
       inputs.forEach((input) => {
         rows.push(new ActionRowBuilder<TextInputBuilder>().addComponents(input));
@@ -135,19 +135,21 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       }).then(async (submit) => {
         if (!submit.isFromMessage()) return;
 
-        let tag_name = submit.fields.getTextInputValue("name");
-        let tag_value = submit.fields.getTextInputValue("value");
+        let name = submit.fields.getTextInputValue("name");
+        let value = submit.fields.getTextInputValue("value");
+        let type = submit.fields.getTextInputValue("type").toLowerCase();
 
-        if (Shop.tags.some((tag) => tag.value === tag_value || tag.name === tag_name)) {
+        if (Shop.tags.some((tag) => tag.value === value || tag.name === name)) {
           let reply = Reply.error("A tag with the same name or value already exists");
           return await submit.reply(reply.ephemeral());
         }
 
-        Shop.add_tag({
-          name: submit.fields.getTextInputValue("name"),
-          value: submit.fields.getTextInputValue("value"),
-          is_filter: !Boolean(submit.fields.getTextInputValue("registration")),
-        });
+        if (type !== "registry" && type !== "group" && type !== "filter") {
+          let reply = Reply.error("Tag type must be either `registry`, `group` or `filter`");
+          return await submit.reply(reply.ephemeral());
+        }
+
+        Shop.add_tag({ name, value, type });
 
         await Shop.save();
         await submit.update(create_reply().visible());
@@ -196,7 +198,12 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
       let description = "";
       for (let tag of Shop.tags) {
-        description += `${tag.is_filter ? "Filter" : "Registration"}⠀•⠀**${tag.name}**⠀•⠀${tag.value}\n`;
+        if (tag.type === "group") {
+          let grouped = Shop.tags.filter((t) => t.type === "registry" && t.value.startsWith(tag.value)).length;
+          description += `${tag.type} (${grouped})⠀•⠀**${tag.name}**⠀•⠀\`${tag.value}\`\n`;
+        } else {
+          description += `${tag.type}⠀•⠀**${tag.name}**⠀•⠀\`${tag.value}\`\n`;
+        }
       }
 
       let reply = Reply.info(description);

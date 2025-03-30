@@ -26,7 +26,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     let name = interaction.options.getString("name", true);
     let value = interaction.options.getString("value", true);
 
-    let tag = Shop.tags.filter((t) => !t.is_filter).find((i) => i.value === name);
+    let tag = Shop.tags.filter((t) => t.type === "registry").find((i) => i.value === name);
     if (!tag) {
       let reply = Reply.error("There is nothing to register with that name");
       return interaction.reply(reply.ephemeral());
@@ -45,11 +45,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 const autocomplete = async (interaction: AutocompleteInteraction) => {
   const focusedValue = interaction.options.getFocused();
-  const choices = Shop.tags.filter((t) => !t.is_filter);
+  const choices = Shop.tags.filter((t) => t.type === "registry");
   const filtered = choices.filter(choice => choice.name.toLowerCase().includes(focusedValue.toLowerCase()));
-  await interaction.respond(
-    filtered.map(choice => ({ name: choice.name, value: choice.value })),
-  );
+  await interaction.respond(filtered);
 };
 
 module.exports = {
