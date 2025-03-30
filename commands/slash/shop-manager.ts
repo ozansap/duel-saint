@@ -188,7 +188,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         description += item.tags.length > 0 ? `${item.cost}⠀•⠀**${item.name}**⠀•⠀\`${item.tags.join(", ")}\`\n` : `${item.cost}⠀•⠀**${item.name}**\n`;
       }
 
-      let reply = Reply.info(description);
+      let reply = new Reply({ title: "Shop Items", description });
       await i.reply(reply.visible());
     } else if (i.customId === "show_tags") {
       if (Shop.tags.length === 0) {
@@ -206,7 +206,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         }
       }
 
-      let reply = Reply.info(description);
+      let reply = new Reply({ title: "Shop Tags", description });
       await i.reply(reply.visible());
     } else {
       Shop.enabled = i.customId === "enable";

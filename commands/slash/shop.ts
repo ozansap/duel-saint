@@ -1,17 +1,41 @@
 import { AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
-import { currency } from "@utils/vars";
+import { currency, shop_name } from "@utils/vars";
 import { Shop } from "@utils/shop";
 import { OrderHandler, UserHandler } from "@utils/db";
 import { GUILD_ID, ORDER_CHANNEL_ID, TEST } from "@config";
 import { now } from "@utils/time";
+import { ShopItem } from "@utils/types";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
 
   if (subcommand === "list") {
-    let description = Shop.items.map((item) => `${item.cost}${currency}⠀•⠀**${item.name}**`).join("\n");
-    let reply = Reply.info(description || "Shop is empty");
+    let tags = Shop.tags.filter((tag) => tag.type === "filter").map((tag) => tag.value);
+    let tag_items = {} as { [key: string]: ShopItem[] };
+    for (let tag of tags) {
+      tag_items[tag] = [];
+    }
+
+    for (let item of Shop.items) {
+      for (let tag of item.tags) {
+        if (Object.keys(tag_items).includes(tag)) {
+          tag_items[tag].push(item);
+        }
+      }
+    }
+
+    for (let tag in tag_items) {
+      tag_items[tag] = tag_items[tag].sort((a, b) => a.cost - b.cost);
+    }
+
+    let tag_descriptions = Object.entries(tag_items).map(([tag, items]) => {
+      let description = items.map((item) => `${item.cost}${currency}⠀•⠀**${item.name}**`).join("\n");
+      return `➜⠀**${Shop.tags.find((t) => t.value === tag)?.name}**\n${description}`;
+    }).join("\n\n");
+
+    let description = tag_descriptions || "Shop is empty";
+    let reply = new Reply({ title: shop_name, description });
     interaction.reply(reply.visible());
   } else if (subcommand === "buy") {
     let item_name = interaction.options.getString("item", true);
@@ -50,7 +74,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       details += `**${tag.name}**:⠀\`${userData.registrations[tag.value]}\`\n`;
     }
 
-    let submit_interaction;
     let group_tags = item.tags.map((value) => Shop.tags.find((tag) => tag.value === value && tag.type === "group")).filter((tag) => tag !== undefined);
     for (let tag of group_tags) {
       let child_tags = Shop.tags.filter((t) => t.type === "registry" && t.value.startsWith(tag.value));
@@ -75,7 +98,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
           filter: (i) => i.user.id === interaction.user.id,
           time: 5 * 60 * 1000,
         }).then(async (submit) => {
-          submit_interaction = submit;
           complete = true;
           let tag_value = submit.values[0];
           let tag_name = registered_tags.find((t) => t.value === tag_value)?.name;
