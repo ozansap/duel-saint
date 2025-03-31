@@ -141,6 +141,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       cost: item.cost,
       tags: item.tags,
       createdAt: now(),
+      details,
     });
 
     let reply = Reply.success(`You bought **${item.name}** for **${item.cost}** ${currency}\n${details}`).setContent(" ").removeComponents();
