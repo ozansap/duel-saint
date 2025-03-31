@@ -61,7 +61,7 @@ module.exports = {
     .addSubcommand((sc) =>
       sc
         .setName("check")
-        .setDescription("Check of a user's registry")
+        .setDescription("Check a user's registry")
         .addUserOption((o) => o.setName("user").setDescription("User you want to check").setRequired(true))
     )
     .addSubcommand((sc) =>

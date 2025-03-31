@@ -45,11 +45,12 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 		if (i.customId === "message") {
 			const input = new TextInputBuilder().setCustomId("message").setLabel("Message").setStyle(TextInputStyle.Short).setPlaceholder("Message to be displayed when a player tries to start a duel when it is disabled").setRequired(true);
 			const row = new ActionRowBuilder<TextInputBuilder>().addComponents(input);
-			const modal = new ModalBuilder().setCustomId("modal").setTitle("Disabled Duel Message").addComponents(row);
+			const modal = new ModalBuilder().setCustomId(`modal-${i.id}`).setTitle("Disabled Duel Message").addComponents(row);
 			i.showModal(modal);
 
 			const submit = await i.awaitModalSubmit({
-				time: 300000,
+				filter: (submit) => submit.customId === `modal-${i.id}`,
+				time: 5 * 60 * 1000,
 			});
 
 			if (submit && submit.isFromMessage()) {

@@ -51,10 +51,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         rows.push(new ActionRowBuilder<TextInputBuilder>().addComponents(input));
       });
 
-      let modal = new ModalBuilder().setCustomId("modal").setTitle("Add Shop Item").addComponents(rows);
+      let modal = new ModalBuilder().setCustomId(`modal-${i.id}`).setTitle("Add Shop Item").addComponents(rows);
       await i.showModal(modal);
 
       i.awaitModalSubmit({
+        filter: (submit) => submit.customId === `modal-${i.id}`,
         time: 10 * 60 * 1000,
       }).then(async (submit) => {
         if (!submit.isFromMessage()) return;
@@ -102,10 +103,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     } else if (i.customId === "message") {
       let input = new TextInputBuilder().setCustomId("message").setLabel("Message").setStyle(TextInputStyle.Short).setPlaceholder("Message to be displayed when a player tries to buy an item when shop is disabled").setRequired(true);
       let row = new ActionRowBuilder<TextInputBuilder>().addComponents(input);
-      let modal = new ModalBuilder().setCustomId("modal").setTitle("Disabled Shop Message").addComponents(row);
+      let modal = new ModalBuilder().setCustomId(`modal-${i.id}`).setTitle("Disabled Shop Message").addComponents(row);
       await i.showModal(modal);
 
       i.awaitModalSubmit({
+        filter: (submit) => submit.customId === `modal-${i.id}`,
         time: 5 * 60 * 1000,
       }).then(async (submit) => {
         if (!submit.isFromMessage()) return;
@@ -127,10 +129,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         rows.push(new ActionRowBuilder<TextInputBuilder>().addComponents(input));
       });
 
-      let modal = new ModalBuilder().setCustomId("modal").setTitle("Create Shop Item Tag").addComponents(rows);
+      let modal = new ModalBuilder().setCustomId(`modal-{}`).setTitle("Create Shop Item Tag").addComponents(rows);
       await i.showModal(modal);
 
       i.awaitModalSubmit({
+        filter: (submit) => submit.customId === `modal-${i.id}`,
         time: 10 * 60 * 1000,
       }).then(async (submit) => {
         if (!submit.isFromMessage()) return;
