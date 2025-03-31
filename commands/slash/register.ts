@@ -21,6 +21,12 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     return interaction.reply(reply.ephemeral());
   }
 
+  let duplicate = await UserHandler.find_registry(tag.value, value);
+  if (duplicate !== null) {
+    let reply = Reply.error(`Someone else already registered the same **${tag.name}**\nIf you think this shouldn't be the case, please contact an administrator`);
+    return interaction.reply(reply.ephemeral());
+  }
+
   let registrations = Object.assign({}, userData.registrations, { [tag.value]: value });
   await userHandler.registrations_set(registrations).update(interaction.user.tag);
 

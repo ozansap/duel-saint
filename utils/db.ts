@@ -36,6 +36,11 @@ export class UserHandler {
 	stages: any[];
 	userID: Snowflake;
 
+	static async find_registry(registry: string, value: string): Promise<UserData | null> {
+		let user = await DB.users.findOne({ [`registrations.${registry}`]: value });
+		return user;
+	}
+
 	constructor(userID: Snowflake) {
 		this.data = {
 			coins: 0,

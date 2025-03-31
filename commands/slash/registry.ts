@@ -5,9 +5,9 @@ import { UserHandler } from "@utils/db";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   let subcommand = interaction.options.getSubcommand(true);
-  let user = interaction.options.getUser("user", true);
 
   if (subcommand === "check") {
+    let user = interaction.options.getUser("user", true);
     let userHandler = new UserHandler(user.id);
     let userData = await userHandler.fetch();
 
@@ -22,13 +22,38 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     if (!description) description = "No registrations found";
     let reply = Reply.info(description);
     return interaction.reply(reply.visible());
-  } if (subcommand === "edit") {
+  } else if (subcommand === "who") {
     let name = interaction.options.getString("name", true);
     let value = interaction.options.getString("value", true);
 
     let tag = Shop.tags.filter((t) => t.type === "registry").find((i) => i.value === name);
     if (!tag) {
       let reply = Reply.error("There is nothing to register with that name");
+      return interaction.reply(reply.ephemeral());
+    }
+
+    let duplicate = await UserHandler.find_registry(tag.value, value);
+    if (duplicate === null) {
+      let reply = Reply.info(`No one registered the same **${tag.name}**`);
+      return interaction.reply(reply.visible());
+    }
+
+    let reply = Reply.info(`That **${tag.name}** is registered by <@${duplicate._id}>`);
+    return interaction.reply(reply.visible());
+  } else if (subcommand === "edit") {
+    let user = interaction.options.getUser("user", true);
+    let name = interaction.options.getString("name", true);
+    let value = interaction.options.getString("value", true);
+
+    let tag = Shop.tags.filter((t) => t.type === "registry").find((i) => i.value === name);
+    if (!tag) {
+      let reply = Reply.error("There is nothing to register with that name");
+      return interaction.reply(reply.ephemeral());
+    }
+
+    let duplicate = await UserHandler.find_registry(tag.value, value);
+    if (duplicate !== null) {
+      let reply = Reply.error(`<@${duplicate._id}> already registered the same **${tag.name}**`);
       return interaction.reply(reply.ephemeral());
     }
 
@@ -63,6 +88,13 @@ module.exports = {
         .setName("check")
         .setDescription("Check a user's registry")
         .addUserOption((o) => o.setName("user").setDescription("User you want to check").setRequired(true))
+    )
+    .addSubcommand((sc) =>
+      sc
+        .setName("who")
+        .setDescription("Check whom a registry belongs to")
+        .addStringOption((o) => o.setName("name").setDescription("Name of the registry").setAutocomplete(true).setRequired(true))
+        .addStringOption((o) => o.setName("value").setDescription("Value of the registry").setRequired(true)),
     )
     .addSubcommand((sc) =>
       sc
