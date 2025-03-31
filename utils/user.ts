@@ -15,7 +15,7 @@ export class User {
 		const s = this.data.settings;
 		const rankInfo = rank(this.data.elo);
 
-		let description = `**${this.data.coins}**${currency}\n\n`;
+		let description = `**${this.data.coins}** ${currency}\n\n`;
 		description += `Rating: **${number(this.data.elo)}**\n` + `Highest: **${number(this.data.elo_highest)}**\n\n` + `Rank: **${rankInfo.name}**\n` + `${createBar(rankInfo.progress, 10)}\n` + `**${number(rankInfo.remaining)} Rating** remaining to rank up\n\n`;
 
 		if (s.career === "all" || peek) {

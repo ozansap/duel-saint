@@ -1,3 +1,4 @@
+import { TEST } from "@config";
 import { UserData } from "@utils/types";
 
 export const colors = {
@@ -51,5 +52,5 @@ export const events = [
 	},
 ];
 
-export const currency = "<:pitacoin:1263752130024570921>";
+export const currency = TEST ? "<:pitacoin:1356180303357542572>" : "<:pitacoin:1263752130024570921>";
 export const shop_name = "Pitashop";

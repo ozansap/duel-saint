@@ -11,7 +11,15 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
 
   if (subcommand === "list") {
-    let tags = Shop.tags.filter((tag) => tag.type === "filter").map((tag) => tag.value);
+    let filter = interaction.options.getString("filter", false);
+
+    if (filter && !Shop.tags.some((tag) => tag.value === filter)) {
+      let reply = Reply.error("Invalid filter");
+      return interaction.reply(reply.ephemeral());
+    }
+
+    let tags = filter ? [filter] : Shop.tags.filter((tag) => tag.type === "filter").map((tag) => tag.value);
+
     let tag_items = {} as { [key: string]: ShopItem[] };
     for (let tag of tags) {
       tag_items[tag] = [];
@@ -30,7 +38,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     }
 
     let tag_descriptions = Object.entries(tag_items).map(([tag, items]) => {
-      let description = items.map((item) => `${item.cost}${currency}⠀•⠀**${item.name}**`).join("\n");
+      let description = items.map((item) => `${item.cost} ${currency}⠀•⠀**${item.name}**`).join("\n");
       return `➜⠀**${Shop.tags.find((t) => t.value === tag)?.name}**\n${description}`;
     }).join("\n\n");
 
@@ -135,19 +143,28 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       createdAt: now(),
     });
 
-    let reply = Reply.success(`You bought **${item.name}** for **${item.cost}**${currency}\n${details}`).setContent(" ").removeComponents();
+    let reply = Reply.success(`You bought **${item.name}** for **${item.cost}** ${currency}\n${details}`).setContent(" ").removeComponents();
     interaction.replied ? interaction.editReply(reply.visible()) : interaction.reply(reply.visible());
   }
 };
 
 const autocomplete = async (interaction: AutocompleteInteraction) => {
-  const focusedValue = interaction.options.getFocused();
-  const choices = Shop.items.map((item) => item.name);
-  const filtered = choices.filter(choice => choice.toLowerCase().includes(focusedValue.toLowerCase()));
-  await interaction.respond(
-    filtered.map(choice => ({ name: choice, value: choice })),
-  );
-};
+  let focused = interaction.options.getFocused(true);
+
+  if (focused.name === "item") {
+    let choices = Shop.items.map((item) => item.name);
+    let filtered = choices.filter(choice => choice.toLowerCase().includes(focused.value.toLowerCase()));
+    await interaction.respond(
+      filtered.map(choice => ({ name: choice, value: choice })),
+    );
+  } else if (focused.name === "filter") {
+    let choices = Shop.tags.filter((tag) => tag.type === "filter");
+    let filtered = choices.filter(choice => choice.name.toLowerCase().includes(focused.value.toLowerCase()));
+    await interaction.respond(
+      filtered.map(choice => ({ name: choice.name, value: choice.value })),
+    );
+  }
+}
 
 module.exports = {
   execute,
@@ -155,7 +172,13 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("shop")
     .setDescription("See a list of items you can buy or buy them")
-    .addSubcommand((sc) => sc.setName("list").setDescription("See a list of items you can buy"))
+    .addSubcommand((sc) =>
+      sc
+        .setName("list")
+        .setDescription("See a list of items you can buy")
+        .addStringOption((o) =>
+          o.setName("filter").setDescription("Filter the shop").setAutocomplete(true).setRequired(false))
+    )
     .addSubcommand((sc) =>
       sc
         .setName("buy")

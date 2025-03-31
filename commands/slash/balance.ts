@@ -11,7 +11,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   if (subcommand === "check") {
     const userHandler = new UserHandler(user.id);
     const userData = await userHandler.fetch();
-    let reply = Reply.info(`${user} has **${userData.coins}**${currency}`);
+    let reply = Reply.info(`${user} has **${userData.coins}** ${currency}`);
     interaction.reply(reply.visible());
   } else {
     let guild = await interaction.client.guilds.fetch(interaction.guildId!);
@@ -25,19 +25,19 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       const amount = interaction.options.getNumber("amount", true);
       const userHandler = new UserHandler(user.id);
       await userHandler.coins_add(amount).update(user.tag);
-      let reply = Reply.success(`Added **${amount}**${currency} to ${user}`);
+      let reply = Reply.success(`Added **${amount}** ${currency} to ${user}`);
       interaction.reply(reply.visible());
     } else if (subcommand === "sub") {
       const amount = interaction.options.getNumber("amount", true);
       const userHandler = new UserHandler(user.id);
       await userHandler.coins_add(-amount).update(user.tag);
-      let reply = Reply.success(`Removed **${amount}**${currency} from ${user}`);
+      let reply = Reply.success(`Removed **${amount}** ${currency} from ${user}`);
       interaction.reply(reply.visible());
     } else if (subcommand === "set") {
       const amount = interaction.options.getNumber("amount", true);
       const userHandler = new UserHandler(user.id);
       await userHandler.coins_set(amount).update(user.tag);
-      let reply = Reply.success(`${user} has **${amount}**${currency}`);
+      let reply = Reply.success(`${user} has **${amount}** ${currency}`);
       interaction.reply(reply.visible());
     }
   }
