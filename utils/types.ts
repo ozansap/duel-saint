@@ -89,7 +89,7 @@ export type OrderData = {
 	reminder?: Snowflake;
 	item: string;
 	cost: number;
-	rest: number;
+	remaining: number;
 	details?: string;
 	tags?: string[];
 	createdAt: number;
@@ -100,9 +100,8 @@ export type OrderData = {
 export type LogData = {
 	user: Snowflake;
 	staff?: Snowflake;
-	action: "add" | "sub" | "set" | "buy";
-	amount: number;
-	rest: number;
+	before: number;
+	after: number;
 	reason: string;
 	date: number;
 }

@@ -47,9 +47,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     LogsHandler.create({
       user: user.id,
       staff: interaction.user.id,
-      action: subcommand,
-      amount: amount,
-      rest: rest,
+      before: userData.coins,
+      after: rest,
       reason: reason ?? "",
       date: now(),
     });

@@ -480,9 +480,8 @@ export class LogsHandler {
 		let orders_array = (await orders_cursor.toArray()).map((order) => {
 			return {
 				user: order.user,
-				action: "buy" as "buy",
-				amount: order.cost,
-				rest: order.rest,
+				before: order.remaining + order.cost,
+				after: order.remaining,
 				reason: order.item,
 				date: order.createdAt,
 			};

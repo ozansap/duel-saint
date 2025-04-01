@@ -12,8 +12,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     let data = await LogsHandler.get_last(per_page);
 
     description = data.map((log) => {
-      let symbol = log.action === "set" ? "=" : (log.action === "add" ? "+" : "-");
-      let line = `[<t:${log.date}:f>] <@${log.user}> ${symbol}${log.amount} ➜ ${log.rest}`;
+      let line = `[<t:${log.date}:f>] <@${log.user}> ${log.before} ➜ ${log.after}`;
       if (log.staff) line += ` (<@${log.staff}>)`;
       if (log.reason) line += `\n${log.reason}`;
       return line;

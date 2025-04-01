@@ -20,22 +20,17 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
     let tags = filter ? [filter] : Shop.tags.filter((tag) => tag.type === "filter").map((tag) => tag.value);
 
-    let unfiltered = "";
     let tag_items = {} as { [key: string]: ShopItem[] };
     for (let tag of tags) {
       tag_items[tag] = [];
     }
 
     for (let item of Shop.items) {
-      let is_filtered = false;
       for (let tag of item.tags) {
         if (Object.keys(tag_items).includes(tag)) {
-          is_filtered = true;
           tag_items[tag].push(item);
         }
       }
-
-      if (!is_filtered) unfiltered += `${item.cost} ${currency}⠀•⠀**${item.name}**\n`;
     }
 
     for (let tag in tag_items) {
@@ -48,7 +43,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return `━━━ ✦ **${Shop.tags.find((t) => t.value === tag)?.name}** ✦ ━━━\n${description}`;
     }).join("\n\n");
 
-    let description = (unfiltered || tag_descriptions) ? unfiltered + "\n" + tag_descriptions : "Shop is empty";
+    let description = tag_descriptions || "Shop is empty";
     let reply = new Reply({ title: "━━━━  ✦  " + shop_name + "  ✦  ━━━━", description });
     interaction.reply(reply.visible());
   } else if (subcommand === "buy") {
@@ -145,7 +140,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       message: order_message.id,
       item: item.name,
       cost: item.cost,
-      rest: userData.coins - item.cost,
+      remaining: userData.coins - item.cost,
       tags: item.tags,
       createdAt: now(),
       details,
