@@ -20,17 +20,22 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
     let tags = filter ? [filter] : Shop.tags.filter((tag) => tag.type === "filter").map((tag) => tag.value);
 
+    let unfiltered = "";
     let tag_items = {} as { [key: string]: ShopItem[] };
     for (let tag of tags) {
       tag_items[tag] = [];
     }
 
     for (let item of Shop.items) {
+      let is_filtered = false;
       for (let tag of item.tags) {
         if (Object.keys(tag_items).includes(tag)) {
+          is_filtered = true;
           tag_items[tag].push(item);
         }
       }
+
+      if (!is_filtered) unfiltered += `${item.cost} ${currency}⠀•⠀**${item.name}**\n`;
     }
 
     for (let tag in tag_items) {
@@ -38,11 +43,12 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     }
 
     let tag_descriptions = Object.entries(tag_items).map(([tag, items]) => {
+      if (items.length === 0) return;
       let description = items.map((item) => `${item.cost} ${currency}⠀•⠀**${item.name}**`).join("\n");
-      return `➜⠀**${Shop.tags.find((t) => t.value === tag)?.name}**\n${description}`;
+      return `━━━ ✦ **${Shop.tags.find((t) => t.value === tag)?.name}** ✦ ━━━\n${description}`;
     }).join("\n\n");
 
-    let description = tag_descriptions || "Shop is empty";
+    let description = (unfiltered || tag_descriptions) ? unfiltered + "\n" + tag_descriptions : "Shop is empty";
     let reply = new Reply({ title: shop_name, description });
     interaction.reply(reply.visible());
   } else if (subcommand === "buy") {
@@ -79,7 +85,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         return interaction.reply(reply.ephemeral());
       }
 
-      details += `**${tag.name}**:⠀\`${userData.registrations[tag.value]}\`\n`;
+      details += `➜⠀**${tag.name}**:⠀\`${userData.registrations[tag.value]}\`\n`;
     }
 
     let group_tags = item.tags.map((value) => Shop.tags.find((tag) => tag.value === value && tag.type === "group")).filter((tag) => tag !== undefined);
@@ -93,7 +99,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         let reply = Reply.error(`You don't have a registered **${tag.name}**\nPlease register it with </${c?.name}:${c?.id}>`);
         return interaction.reply(reply.ephemeral());
       } else if (registered_tags.length === 1) {
-        details += `**${registered_tags[0].name}**:⠀\`${userData.registrations[registered_tags[0].value]}\`\n`;
+        details += `➜⠀**${registered_tags[0].name}**:⠀\`${userData.registrations[registered_tags[0].value]}\`\n`;
       } else {
         let select = new StringSelectMenuBuilder().setCustomId("select").addOptions(registered_tags.map((tag) => ({ label: tag.name, value: tag.value }))).setMinValues(1).setMaxValues(1);
         let reply = new Reply().setContent(`You have multiple registered **${tag.name}**. Please select one:`).addComponents([select]);
@@ -109,7 +115,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
           complete = true;
           let tag_value = submit.values[0];
           let tag_name = registered_tags.find((t) => t.value === tag_value)?.name;
-          details += `**${tag_name}**:⠀\`${userData.registrations[tag_value]}\`\n`;
+          details += `➜⠀**${tag_name}**:⠀\`${userData.registrations[tag_value]}\`\n`;
         }).catch(() => {
           message.delete().catch(console.error);
         });
@@ -144,7 +150,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       details,
     });
 
-    let reply = Reply.success(`You bought **${item.name}** for **${item.cost}** ${currency}\n${details}`).setContent(" ").removeComponents();
+    let reply = Reply.success(`Order placed for **${item.name}**!\nYou will be informed when your order is delivered\n${details}`).setContent(" ").removeComponents();
     interaction.replied ? interaction.editReply(reply.visible()) : interaction.reply(reply.visible());
   }
 };

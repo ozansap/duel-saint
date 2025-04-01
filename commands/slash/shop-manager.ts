@@ -129,7 +129,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         rows.push(new ActionRowBuilder<TextInputBuilder>().addComponents(input));
       });
 
-      let modal = new ModalBuilder().setCustomId(`modal-{}`).setTitle("Create Shop Item Tag").addComponents(rows);
+      let modal = new ModalBuilder().setCustomId(`modal-${i.id}`).setTitle("Create Shop Item Tag").addComponents(rows);
       await i.showModal(modal);
 
       i.awaitModalSubmit({
