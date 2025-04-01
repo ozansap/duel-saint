@@ -49,7 +49,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     }).join("\n\n");
 
     let description = (unfiltered || tag_descriptions) ? unfiltered + "\n" + tag_descriptions : "Shop is empty";
-    let reply = new Reply({ title: shop_name, description });
+    let reply = new Reply({ title: "━━━━  ✦  " + shop_name + "  ✦  ━━━━", description });
     interaction.reply(reply.visible());
   } else if (subcommand === "buy") {
     let item_name = interaction.options.getString("item", true);
@@ -110,7 +110,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
         await message.awaitMessageComponent<ComponentType.StringSelect>({
           filter: (i) => i.user.id === interaction.user.id,
-          time: 5 * 60 * 1000,
+          time: 1 * 60 * 1000,
         }).then(async (submit) => {
           complete = true;
           let tag_value = submit.values[0];
@@ -145,6 +145,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       message: order_message.id,
       item: item.name,
       cost: item.cost,
+      rest: userData.coins - item.cost,
       tags: item.tags,
       createdAt: now(),
       details,

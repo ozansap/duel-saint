@@ -89,11 +89,22 @@ export type OrderData = {
 	reminder?: Snowflake;
 	item: string;
 	cost: number;
+	rest: number;
 	details?: string;
 	tags?: string[];
 	createdAt: number;
 	closedAt?: number;
 	result?: "fulfilled" | "refunded";
+}
+
+export type LogData = {
+	user: Snowflake;
+	staff?: Snowflake;
+	action: "add" | "sub" | "set" | "buy";
+	amount: number;
+	rest: number;
+	reason: string;
+	date: number;
 }
 
 export type RankInfo = {

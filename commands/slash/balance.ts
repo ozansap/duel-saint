@@ -1,6 +1,7 @@
 import { ECONOMY_ROLE_ID } from "@config";
-import { UserHandler } from "@utils/db";
+import { LogsHandler, UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
+import { now } from "@utils/time";
 import { currency } from "@utils/vars";
 import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
 
@@ -8,12 +9,17 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
   const user = interaction.options.getUser("user", true);
 
+  const userHandler = new UserHandler(user.id);
+  const userData = await userHandler.fetch();
+
   if (subcommand === "check") {
-    const userHandler = new UserHandler(user.id);
-    const userData = await userHandler.fetch();
     let reply = Reply.info(`${user} has **${userData.coins}** ${currency}`);
     interaction.reply(reply.visible());
   } else {
+    const amount = interaction.options.getNumber("amount", true);
+    const reason = interaction.options.getString("reason", false);
+    let rest = 0;
+
     let guild = await interaction.client.guilds.fetch(interaction.guildId!);
     let member = await guild.members.fetch(interaction.user.id);
     if (!member.roles.cache.has(ECONOMY_ROLE_ID) && !member.permissions.has(PermissionsBitField.Flags.Administrator)) {
@@ -22,24 +28,31 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     }
 
     if (subcommand === "add") {
-      const amount = interaction.options.getNumber("amount", true);
-      const userHandler = new UserHandler(user.id);
       await userHandler.coins_add(amount).update(user.tag);
       let reply = Reply.success(`Added **${amount}** ${currency} to ${user}`);
       interaction.reply(reply.visible());
+      rest = userData.coins + amount;
     } else if (subcommand === "sub") {
-      const amount = interaction.options.getNumber("amount", true);
-      const userHandler = new UserHandler(user.id);
       await userHandler.coins_add(-amount).update(user.tag);
       let reply = Reply.success(`Removed **${amount}** ${currency} from ${user}`);
       interaction.reply(reply.visible());
+      rest = userData.coins - amount;
     } else if (subcommand === "set") {
-      const amount = interaction.options.getNumber("amount", true);
-      const userHandler = new UserHandler(user.id);
       await userHandler.coins_set(amount).update(user.tag);
       let reply = Reply.success(`${user} has **${amount}** ${currency}`);
       interaction.reply(reply.visible());
-    }
+      rest = amount;
+    } else return;
+
+    LogsHandler.create({
+      user: user.id,
+      staff: interaction.user.id,
+      action: subcommand,
+      amount: amount,
+      rest: rest,
+      reason: reason ?? "",
+      date: now(),
+    });
   }
 };
 
@@ -55,6 +68,7 @@ module.exports = {
         .setDescription("Add coins to a user")
         .addUserOption((o) => o.setName("user").setDescription("User you want to add coins to").setRequired(true))
         .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to add").setRequired(true))
+        .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))
     )
     .addSubcommand((sc) =>
       sc
@@ -62,6 +76,7 @@ module.exports = {
         .setDescription("Remove coins from a user")
         .addUserOption((o) => o.setName("user").setDescription("User you want to remove coins from").setRequired(true))
         .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to remove").setRequired(true))
+        .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))
     )
     .addSubcommand((sc) =>
       sc
@@ -69,6 +84,7 @@ module.exports = {
         .setDescription("Set coins of a user")
         .addUserOption((o) => o.setName("user").setDescription("User you want to set coins of").setRequired(true))
         .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to set").setRequired(true))
+        .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))
     )
     .addSubcommand((sc) =>
       sc

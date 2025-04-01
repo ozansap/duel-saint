@@ -1,7 +1,7 @@
 import { Snowflake } from "discord.js";
 import { Collection, MongoClient, ObjectId, OptionalId } from "mongodb";
 import { MONGO_URI, MONGO_DB_NAME } from "@config";
-import { DuelData, GeneralData, OrderData, SeasonalProfile, UserData } from "@utils/types";
+import { DuelData, GeneralData, LogData, OrderData, SeasonalProfile, UserData } from "@utils/types";
 import { now, year } from "@utils/time";
 import { seasons } from "@utils/vars";
 
@@ -18,6 +18,7 @@ export class DB {
 	static duels: Collection<DuelData>;
 	static orders: Collection<OrderData>;
 	static general: Collection<GeneralData>;
+	static logs: Collection<LogData>;
 	static mongoClient = new MongoClient(MONGO_URI);
 
 	static async connect(): Promise<void> {
@@ -28,6 +29,7 @@ export class DB {
 		DB.duels = database.collection("duels");
 		DB.orders = database.collection("orders");
 		DB.general = database.collection("general");
+		DB.logs = database.collection("logs");
 	}
 }
 
@@ -455,6 +457,43 @@ export class OrderHandler {
 
 	async update(data: OrderData) {
 		DB.orders.findOneAndReplace({ $or: [{ message: this.messageID }, { reminder: this.messageID }] }, data);
+	}
+}
+
+export class LogsHandler {
+	static async create(data: LogData) {
+		await DB.logs.insertOne(data);
+	}
+
+	static async get_last(n: number): Promise<LogData[]> {
+		let logs_cursor = DB.logs
+			.find()
+			.sort({ date: -1 })
+			.limit(n);
+
+		let orders_cursor = DB.orders
+			.find({ $or: [{ result: { $not: { $eq: "refunded" } } }, { result: { $exists: false } }] })
+			.sort({ createdAt: -1 })
+			.limit(n);
+
+		let logs_array = await logs_cursor.toArray();
+		let orders_array = (await orders_cursor.toArray()).map((order) => {
+			return {
+				user: order.user,
+				action: "buy" as "buy",
+				amount: order.cost,
+				rest: order.rest,
+				reason: order.item,
+				date: order.createdAt,
+			};
+		});
+
+		let data = [...logs_array, ...orders_array].sort((a, b) => a.date - b.date).slice(-n);
+
+		logs_cursor.close();
+		orders_cursor.close();
+
+		return data;
 	}
 }
 
