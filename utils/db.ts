@@ -465,16 +465,26 @@ export class LogsHandler {
 		await DB.logs.insertOne(data);
 	}
 
-	static async get_last(n: number): Promise<LogData[]> {
-		let logs_cursor = DB.logs
-			.find()
-			.sort({ date: -1 })
-			.limit(n);
+	static async get_last(n: number, userID?: Snowflake): Promise<LogData[]> {
+		let logs_cursor = (userID) ?
+			DB.logs
+				.find({ user: userID })
+				.sort({ date: -1 })
+				.limit(n) :
+			DB.logs
+				.find()
+				.sort({ date: -1 })
+				.limit(n);
 
-		let orders_cursor = DB.orders
-			.find({ $or: [{ result: { $not: { $eq: "refunded" } } }, { result: { $exists: false } }] })
-			.sort({ createdAt: -1 })
-			.limit(n);
+		let orders_cursor = (userID) ?
+			DB.orders
+				.find({ user: userID, $or: [{ result: { $not: { $eq: "refunded" } } }, { result: { $exists: false } }] })
+				.sort({ createdAt: -1 })
+				.limit(n) :
+			DB.orders
+				.find({ $or: [{ result: { $not: { $eq: "refunded" } } }, { result: { $exists: false } }] })
+				.sort({ createdAt: -1 })
+				.limit(n);
 
 		let logs_array = await logs_cursor.toArray();
 		let orders_array = (await orders_cursor.toArray()).map((order) => {

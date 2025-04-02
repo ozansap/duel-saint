@@ -6,10 +6,11 @@ const per_page = 10;
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
+  const user = interaction.options.getUser("user", false);
 
   let description = "";
   if (subcommand === "coins") {
-    let data = await LogsHandler.get_last(per_page);
+    let data = await LogsHandler.get_last(per_page, user?.id);
 
     description = data.map((log) => {
       let line = `[<t:${log.date}:f>] <@${log.user}> ${log.before} ➜ ${log.after}`;
@@ -37,5 +38,6 @@ module.exports = {
       sc
         .setName("coins")
         .setDescription("Check the logs of coin changes")
+        .addUserOption((o) => o.setName("user").setDescription("The user to check the logs for").setRequired(false))
     )
 };
