@@ -4,6 +4,7 @@ import { MONGO_URI, MONGO_DB_NAME } from "@config";
 import { DuelData, GeneralData, LogData, OrderData, SeasonalProfile, UserData } from "@utils/types";
 import { now, year } from "@utils/time";
 import { seasons } from "@utils/vars";
+import { clamp } from "./num";
 
 const userData_default = {
 	wins: 0,
@@ -490,8 +491,7 @@ export class LogsHandler {
 		let orders_array = (await orders_cursor.toArray()).map((order) => {
 			return {
 				user: order.user,
-				before: order.remaining + order.cost,
-				after: order.remaining,
+				change: "-" + order.cost,
 				reason: order.item,
 				date: order.createdAt,
 			};
@@ -503,6 +503,22 @@ export class LogsHandler {
 		orders_cursor.close();
 
 		return data;
+	}
+
+	static async get_page(page_maybe: number, userID?: Snowflake): Promise<{ data: LogData[], count: number, pages: number, page: number }> {
+		const per_page = 10;
+
+		let count_logs = userID ? await DB.logs.countDocuments({ user: userID }) : await DB.logs.countDocuments();
+		let count_orders = userID ? await DB.orders.countDocuments({ user: userID, $or: [{ result: { $not: { $eq: "refunded" } } }, { result: { $exists: false } }] }) : await DB.orders.countDocuments({ $or: [{ result: { $not: { $eq: "refunded" } } }, { result: { $exists: false } }] });
+		let count = count_logs + count_orders;
+		let pages = Math.ceil(count / per_page);
+		let page = clamp(1, page_maybe, pages);
+
+		let on_this_page = (page === pages && count % per_page !== 0) ? count % per_page : per_page;
+
+		let data = (await LogsHandler.get_last(page * per_page, userID)).slice(0, on_this_page);
+
+		return { data, count, pages, page };
 	}
 }
 

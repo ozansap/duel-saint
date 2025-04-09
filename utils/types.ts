@@ -83,13 +83,11 @@ export type ShopItem = {
 }
 
 export type OrderData = {
-	_id?: ObjectId;
 	user: Snowflake;
 	message: Snowflake;
 	reminder?: Snowflake;
 	item: string;
 	cost: number;
-	remaining: number;
 	details?: string;
 	tags?: string[];
 	createdAt: number;
@@ -100,8 +98,7 @@ export type OrderData = {
 export type LogData = {
 	user: Snowflake;
 	staff?: Snowflake;
-	before: number;
-	after: number;
+	change: string;
 	reason: string;
 	date: number;
 }

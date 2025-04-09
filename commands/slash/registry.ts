@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { Shop } from "@utils/shop";
 import { UserHandler } from "@utils/db";
@@ -41,6 +41,13 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     let reply = Reply.info(`That **${tag.name}** is registered by <@${duplicate._id}>`);
     return interaction.reply(reply.visible());
   } else if (subcommand === "edit") {
+    let guild = await interaction.client.guilds.fetch(interaction.guildId!);
+    let member = await guild.members.fetch(interaction.user.id);
+    if (!member.permissions.has(PermissionFlagsBits.Administrator)) {
+      let reply = Reply.error("You don't have the permission to do that");
+      return interaction.reply(reply.ephemeral());
+    }
+
     let user = interaction.options.getUser("user", true);
     let name = interaction.options.getString("name", true);
     let value = interaction.options.getString("value", true);
@@ -81,8 +88,8 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("registry")
     .setDescription("Manage user registries")
-    .setDefaultMemberPermissions(8)
-    .setDMPermission(false)
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone)
+    .setContexts(InteractionContextType.Guild)
     .addSubcommand((sc) =>
       sc
         .setName("check")

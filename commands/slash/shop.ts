@@ -140,7 +140,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       message: order_message.id,
       item: item.name,
       cost: item.cost,
-      remaining: userData.coins - item.cost,
       tags: item.tags,
       createdAt: now(),
       details,

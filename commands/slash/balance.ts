@@ -18,7 +18,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   } else {
     const amount = interaction.options.getNumber("amount", true);
     const reason = interaction.options.getString("reason", false);
-    let rest = 0;
+    let change = "";
 
     let guild = await interaction.client.guilds.fetch(interaction.guildId!);
     let member = await guild.members.fetch(interaction.user.id);
@@ -31,24 +31,23 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       await userHandler.coins_add(amount).update(user.tag);
       let reply = Reply.success(`Added **${amount}** ${currency} to ${user}`);
       interaction.reply(reply.visible());
-      rest = userData.coins + amount;
+      change = `+${amount}`;
     } else if (subcommand === "sub") {
       await userHandler.coins_add(-amount).update(user.tag);
       let reply = Reply.success(`Removed **${amount}** ${currency} from ${user}`);
       interaction.reply(reply.visible());
-      rest = userData.coins - amount;
+      change = `-${amount}`;
     } else if (subcommand === "set") {
       await userHandler.coins_set(amount).update(user.tag);
       let reply = Reply.success(`${user} has **${amount}** ${currency}`);
       interaction.reply(reply.visible());
-      rest = amount;
+      change = `=${amount}`;
     } else return;
 
     LogsHandler.create({
       user: user.id,
       staff: interaction.user.id,
-      before: userData.coins,
-      after: rest,
+      change: change,
       reason: reason ?? "",
       date: now(),
     });
