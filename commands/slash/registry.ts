@@ -106,7 +106,7 @@ module.exports = {
     .addSubcommand((sc) =>
       sc
         .setName("edit")
-        .setDescription("Edit a user's registry")
+        .setDescription("(Admin) Edit a user's registry")
         .addUserOption((o) => o.setName("user").setDescription("User you want to edit").setRequired(true))
         .addStringOption((o) => o.setName("name").setDescription("Name of the registry").setAutocomplete(true).setRequired(true))
         .addStringOption((o) => o.setName("value").setDescription("Value of the registry").setRequired(true)),

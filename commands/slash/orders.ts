@@ -10,7 +10,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     return interaction.reply(reply.ephemeral());
   }
 
-  let description = orders.map((order) => `<t:${order.createdAt}:f>⠀•⠀**${order.item}**`).join("\n");
+  let description = orders.map((order) => `<t:${order.createdAt}:d> <t:${order.createdAt}:t>⠀•⠀**${order.item}**`).join("\n");
   let reply = Reply.info(description);
   interaction.reply(reply.visible());
 };

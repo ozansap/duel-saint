@@ -63,7 +63,7 @@ module.exports = {
     .addSubcommand((sc) =>
       sc
         .setName("add")
-        .setDescription("Add coins to a user")
+        .setDescription("(Admin) Add coins to a user")
         .addUserOption((o) => o.setName("user").setDescription("User you want to add coins to").setRequired(true))
         .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to add").setRequired(true))
         .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))
@@ -71,7 +71,7 @@ module.exports = {
     .addSubcommand((sc) =>
       sc
         .setName("sub")
-        .setDescription("Remove coins from a user")
+        .setDescription("(Admin) Remove coins from a user")
         .addUserOption((o) => o.setName("user").setDescription("User you want to remove coins from").setRequired(true))
         .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to remove").setRequired(true))
         .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))
@@ -79,7 +79,7 @@ module.exports = {
     .addSubcommand((sc) =>
       sc
         .setName("set")
-        .setDescription("Set coins of a user")
+        .setDescription("(Admin) Set coins of a user")
         .addUserOption((o) => o.setName("user").setDescription("User you want to set coins of").setRequired(true))
         .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to set").setRequired(true))
         .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))

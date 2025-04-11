@@ -73,7 +73,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
           tags: submit.fields.getTextInputValue("tags").split(",").map((tag) => tag.trim()).filter((tag) => tag !== ""),
         });
 
-        Shop.items.sort((a, b) => b.cost - a.cost);
+        Shop.items.sort((a, b) => a.cost - b.cost);
         await Shop.save();
         await submit.update(create_reply().visible());
       }).catch(() => { });
@@ -144,6 +144,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
         if (Shop.tags.some((tag) => tag.value === value || tag.name === name)) {
           let reply = Reply.error("A tag with the same name or value already exists");
+          return await submit.reply(reply.ephemeral());
+        }
+
+        if (value.startsWith("$")) {
+          let reply = Reply.error("Tag value cannot start with `$`");
           return await submit.reply(reply.ephemeral());
         }
 

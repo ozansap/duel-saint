@@ -40,5 +40,5 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("leaderboard")
 		.setDescription("See the top rated players")
-		.addStringOption((o) => o.setName("type").setDescription("Type of leaderboard").setRequired(true).addChoices({ name: "Rating", value: "elo" }, { name: "Wins", value: "wins" })),
+		.addStringOption((o) => o.setName("type").setDescription("Type of leaderboard").setRequired(true).addChoices(Object.entries(types).map(([k, v]) => ({ name: v, value: k })))),
 };

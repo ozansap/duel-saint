@@ -34,7 +34,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     }
 
     for (let tag in tag_items) {
-      tag_items[tag] = tag_items[tag].sort((a, b) => a.cost - b.cost);
+      tag_items[tag] = tag_items[tag].sort((a, b) => {
+        if (a.tags.includes("$top") && !b.tags.includes("$top")) return -1;
+        if (!a.tags.includes("$top") && b.tags.includes("$top")) return 1;
+        return a.cost - b.cost;
+      });
     }
 
     let tag_descriptions = Object.entries(tag_items).map(([tag, items]) => {
