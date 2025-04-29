@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { TEST } from "@config";
 
@@ -24,5 +24,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 module.exports = {
 	execute,
-	data: new SlashCommandBuilder().setName("help").setDescription("See information about commands"),
+	data: new SlashCommandBuilder()
+		.setName("help")
+		.setDescription("See information about commands")
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
 };

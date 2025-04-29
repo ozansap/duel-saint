@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
+import { AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, InteractionContextType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { currency, shop_name } from "@utils/vars";
 import { Shop } from "@utils/shop";
@@ -178,18 +178,22 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("shop")
     .setDescription("See a list of items you can buy or buy them")
-    .addSubcommand((sc) =>
-      sc
-        .setName("list")
-        .setDescription("See a list of items you can buy")
-        .addStringOption((o) =>
-          o.setName("filter").setDescription("Filter the shop").setAutocomplete(true).setRequired(false))
+    .setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+    .addSubcommand((sc) => sc
+      .setName("list")
+      .setDescription("See a list of items you can buy")
+      .addStringOption((o) => o
+        .setName("filter")
+        .setDescription("Filter the shop")
+        .setAutocomplete(true)
+        .setRequired(false))
     )
-    .addSubcommand((sc) =>
-      sc
-        .setName("buy")
-        .setDescription("Buy an item from the shop")
-        .addStringOption((o) =>
-          o.setName("item").setDescription("Name of the item you want to buy").setAutocomplete(true).setRequired(true))
-    )
+    .addSubcommand((sc) => sc
+      .setName("buy")
+      .setDescription("Buy an item from the shop")
+      .addStringOption((o) => o
+        .setName("item")
+        .setDescription("Name of the item you want to buy")
+        .setAutocomplete(true)
+        .setRequired(true)))
 };

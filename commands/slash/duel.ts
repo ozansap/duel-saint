@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { GUILD_ID, OWNER_ID } from "@config";
 import { GeneralHandler, UserHandler } from "@utils/db";
 import { Duel, DuelState } from "@utils/duel";
@@ -75,6 +75,9 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("duel")
 		.setDescription("Invite another player to a ranked duel")
-		.setDMPermission(false)
-		.addUserOption((o) => o.setName("player").setDescription("The player who you want to duel").setRequired(true)),
+		.setContexts([InteractionContextType.Guild])
+		.addUserOption((o) => o
+			.setName("player")
+			.setDescription("The player who you want to duel")
+			.setRequired(true))
 };

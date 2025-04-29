@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, GuildMember, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, GuildMember, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { GUILD_ID } from "@config";
 import { DB } from "@utils/db";
 import { Reply } from "@utils/reply";
@@ -54,14 +54,15 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("raffle")
 		.setDescription("Find the winner(s) of a raffle")
-		.setDefaultMemberPermissions(8)
-		.setDMPermission(false)
-		.addStringOption((o) =>
-			o
-				.setName("event")
-				.setDescription("The event for which you want to run the raffle")
-				.setRequired(true)
-				.addChoices(...events.map((e) => ({ name: e.name, value: e.id })))
-		)
-		.addNumberOption((o) => o.setName("winners").setDescription("Amount of winners for this raffle").setRequired(true)),
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setContexts([InteractionContextType.Guild])
+		.addStringOption((o) => o
+			.setName("event")
+			.setDescription("The event for which you want to run the raffle")
+			.setRequired(true)
+			.addChoices(...events.map((e) => ({ name: e.name, value: e.id }))))
+		.addNumberOption((o) => o
+			.setName("winners")
+			.setDescription("Amount of winners for this raffle")
+			.setRequired(true))
 };

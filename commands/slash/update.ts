@@ -1,5 +1,5 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { GUILD_ID } from "@config";
+import { ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { GUILD_ID, OWNER_ID } from "@config";
 import { number } from "@utils/num";
 import { Reply } from "@utils/reply";
 import { update_cards } from "@utils/update_cards";
@@ -23,14 +23,20 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return interaction.editReply(reply.visible());
     }
 
-    if (result.data === 0) {
+    if (result.data.length === 0) {
       const reply = Reply.info(`No new cards found`);
       return interaction.editReply(reply.visible());
     }
 
-    const reply = Reply.success(`Updated **${result.data}** new cards`);
+    let description = result.data.length < 21 ? `Found **${result.data.length}** new cards\n\n${result.data.message}` : `Found **${result.data.length}** new cards`;
+    const reply = Reply.success(description);
     return interaction.editReply(reply.visible());
   } else if (subcommand === "commands") {
+    if (interaction.user.id !== OWNER_ID) {
+      const reply = Reply.error(`This command is disabled`);
+      return interaction.reply(reply.ephemeral());
+    }
+
     const size = await Commands.refresh(interaction.client);
     const reply = Reply.success(`Deleted **${number(size[0], "command")}**\nDeployed **${number(size[1], "command")}**`);
     return interaction.reply(reply.visible());
@@ -42,8 +48,12 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("update")
     .setDescription("Update certain parts of the bot")
-    .setDefaultMemberPermissions(8)
-    .setDMPermission(false)
-    .addSubcommand((sc) => sc.setName("cards").setDescription("Update the new cards"))
-    .addSubcommand((sc) => sc.setName("commands").setDescription("Refresh the global commands"))
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone)
+    .setContexts([InteractionContextType.Guild])
+    .addSubcommand((sc) => sc
+      .setName("cards")
+      .setDescription("Update the new cards"))
+    .addSubcommand((sc) => sc
+      .setName("commands")
+      .setDescription("Refresh the global commands"))
 };

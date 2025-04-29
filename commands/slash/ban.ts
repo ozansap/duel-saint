@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { GUILD_ID } from "@config";
 import { UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
@@ -45,9 +45,24 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("ban")
 		.setDescription("Ban a player from ranked play")
-		.setDefaultMemberPermissions(2)
-		.setDMPermission(false)
-		.addUserOption((o) => o.setName("player").setDescription("The player who you want to ban").setRequired(true))
-		.addStringOption((o) => o.setName("duration").setDescription("How long do you want to ban").setRequired(true).setChoices({ name: "1 Day", value: "1_day" }, { name: "3 Days", value: "3_day" }, { name: "1 Week", value: "1_week" }, { name: "2 Weeks", value: "2_week" }, { name: "1 Month", value: "1_month" }, { name: "Lifelong", value: "100_year" }))
-		.addStringOption((o) => o.setName("reason").setDescription("Reason to ban this player")),
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+		.setContexts([InteractionContextType.Guild])
+		.addUserOption((o) => o
+			.setName("player")
+			.setDescription("The player who you want to ban")
+			.setRequired(true))
+		.addStringOption((o) => o
+			.setName("duration")
+			.setDescription("How long do you want to ban")
+			.setRequired(true)
+			.setChoices(
+				{ name: "1 Day", value: "1_day" },
+				{ name: "3 Days", value: "3_day" },
+				{ name: "1 Week", value: "1_week" },
+				{ name: "2 Weeks", value: "2_week" },
+				{ name: "1 Month", value: "1_month" },
+				{ name: "Lifelong", value: "100_year" }))
+		.addStringOption((o) => o
+			.setName("reason")
+			.setDescription("Reason to ban this player"))
 };

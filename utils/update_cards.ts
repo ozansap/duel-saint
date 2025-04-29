@@ -58,7 +58,7 @@ const requests = [
   }
 ];
 
-export async function update_cards(): Promise<Maybe<number>> {
+export async function update_cards(): Promise<Maybe<{ length: number, message: string }>> {
   let cardsJSON = JSON.parse(fs.readFileSync("cards.json", "utf-8"));
 
   let old_characters = cardsJSON.characters as API_Card[];
@@ -78,7 +78,7 @@ export async function update_cards(): Promise<Maybe<number>> {
   let new_actions = cardsJSON.actions.filter((na: API_Card) => !old_actions.some((oa) => oa.id === na.id)) as API_Card[];
   let new_cards = [...new_characters, ...new_actions];
 
-  if (new_cards.length === 0) return SuccessResult(0);
+  if (new_cards.length === 0) return SuccessResult({ length: 0, message: "" });
 
   let codes_result = await update_codes(new_characters, new_actions);
   if (codes_result.error) return codes_result;
@@ -88,7 +88,7 @@ export async function update_cards(): Promise<Maybe<number>> {
 
   fs.writeFileSync('./cards.json', JSON.stringify(cardsJSON, null, 2));
   Cards.refresh();
-  return SuccessResult(new_cards.length);
+  return SuccessResult({ length: new_cards.length, message: new_cards.map(c => `\`${c.name}\`: ${c.id} ➜ ${codes_result.data.find(code => code.id === c.id)?.code}`).join("\n") });
 }
 
 async function update_codes(characters: API_Card[], actions: API_Card[]): Promise<Maybe<Card[]>> {

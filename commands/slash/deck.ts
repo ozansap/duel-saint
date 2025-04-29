@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { decode, encode, fromImage, toImage, toText } from "@utils/code";
 
@@ -126,23 +126,26 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("deck")
 		.setDescription("Encode or Decode deck codes and find the represented deck")
-		.setDMPermission(false)
-		.addSubcommand((sc) =>
-			sc
-				.setName("encode")
-				.setDescription("Convert an image to deck code and find the cards")
-				.addAttachmentOption((o) => o.setName("deck_image").setDescription("Deck image").setRequired(true))
-		)
-		.addSubcommand((sc) =>
-			sc
-				.setName("decode")
-				.setDescription("Find the deck that is represented by the deck code")
-				.addStringOption((o) => o.setName("deck_code").setDescription("Deck code").setRequired(true))
-		)
-		.addSubcommand((sc) =>
-			sc
-				.setName("image")
-				.setDescription("Generate the image from a deck code")
-				.addStringOption((o) => o.setName("deck_code").setDescription("Deck code").setRequired(true))
-		),
+		.setContexts([InteractionContextType.Guild])
+		.addSubcommand((sc) => sc
+			.setName("encode")
+			.setDescription("Convert an image to deck code and find the cards")
+			.addAttachmentOption((o) => o
+				.setName("deck_image")
+				.setDescription("Deck image")
+				.setRequired(true)))
+		.addSubcommand((sc) => sc
+			.setName("decode")
+			.setDescription("Find the deck that is represented by the deck code")
+			.addStringOption((o) => o
+				.setName("deck_code")
+				.setDescription("Deck code")
+				.setRequired(true)))
+		.addSubcommand((sc) => sc
+			.setName("image")
+			.setDescription("Generate the image from a deck code")
+			.addStringOption((o) => o
+				.setName("deck_code")
+				.setDescription("Deck code")
+				.setRequired(true)))
 };

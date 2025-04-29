@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { UserHandler } from "@utils/db";
 import { User } from "@utils/user";
 
@@ -19,5 +19,8 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("history")
 		.setDescription("See your duel history")
-		.addBooleanOption((o) => o.setName("hidden").setDescription("Should the information be hidden from others")),
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+		.addBooleanOption((o) => o
+			.setName("hidden")
+			.setDescription("Should the information be hidden from others"))
 };

@@ -35,5 +35,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("profile")
 		.setDescription("See the profile of yourself or another player")
-		.addUserOption((o) => o.setName("player").setDescription("The player whose profile you want to see")),
+		.addUserOption((o) => o
+			.setName("player")
+			.setDescription("The player whose profile you want to see"))
 };

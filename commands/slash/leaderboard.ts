@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { Leaderboard } from "@utils/db";
 import { Reply } from "@utils/reply";
 import { UserData } from "@utils/types";
@@ -40,5 +40,10 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("leaderboard")
 		.setDescription("See the top rated players")
-		.addStringOption((o) => o.setName("type").setDescription("Type of leaderboard").setRequired(true).addChoices(Object.entries(types).map(([k, v]) => ({ name: v, value: k })))),
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+		.addStringOption((o) => o
+			.setName("type")
+			.setDescription("Type of leaderboard")
+			.setRequired(true)
+			.addChoices(Object.entries(types).map(([k, v]) => ({ name: v, value: k }))))
 };

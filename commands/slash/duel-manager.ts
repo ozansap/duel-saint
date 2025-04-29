@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, InteractionContextType, ModalBuilder, PermissionFlagsBits, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { GeneralHandler } from "@utils/db";
 import { Duel, DuelState } from "@utils/duel";
 import { Reply } from "@utils/reply";
@@ -79,6 +79,6 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("duel-manager")
 		.setDescription("Admin dashboard for controlling duels")
-		.setDefaultMemberPermissions(8)
-		.setContexts(0),
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setContexts([InteractionContextType.Guild])
 };

@@ -1,6 +1,6 @@
 import { LogsHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
-import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
@@ -33,12 +33,17 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("logs")
     .setDescription("Check the logs")
-    .setDefaultMemberPermissions(PermissionsBitField.Flags.MentionEveryone)
-    .addSubcommand((sc) =>
-      sc
-        .setName("coins")
-        .setDescription("Check the logs of coin changes")
-        .addUserOption((o) => o.setName("user").setDescription("The user to check the logs for").setRequired(false))
-        .addNumberOption((o) => o.setName("page").setDescription("Page number").setRequired(false))
-    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone)
+    .setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+    .addSubcommand((sc) => sc
+      .setName("coins")
+      .setDescription("Check the logs of coin changes")
+      .addUserOption((o) => o
+        .setName("user")
+        .setDescription("The user to check the logs for")
+        .setRequired(false))
+      .addNumberOption((o) => o
+        .setName("page")
+        .setDescription("Page number")
+        .setRequired(false)))
 };

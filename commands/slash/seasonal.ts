@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, InteractionContextType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
 import { UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
 import { User } from "@utils/user";
@@ -78,5 +78,8 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("seasonal")
 		.setDescription("See the seasonal stats of yourself or another player")
-		.addUserOption((o) => o.setName("player").setDescription("The player whose seasonal stats you want to see")),
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+		.addUserOption((o) => o
+			.setName("player")
+			.setDescription("The player whose seasonal stats you want to see"))
 };

@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandInteraction, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandOptionType, ApplicationCommandType, ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { TEST } from "@config";
 
@@ -27,5 +27,6 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("staff-help")
     .setDescription("See information about staff commands")
-    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone),
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone)
+    .setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
 };

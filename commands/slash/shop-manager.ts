@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, ModalBuilder, SlashCommandBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, InteractionContextType, ModalBuilder, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import { Reply } from "@utils/reply";
 import { Shop } from "@utils/shop";
 import { number } from "@utils/num";
@@ -235,6 +235,6 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("shop-manager")
     .setDescription("Admin dashboard for shop management")
-    .setDefaultMemberPermissions(8)
-    .setDMPermission(false),
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
 };

@@ -69,5 +69,5 @@ module.exports = {
 	data: new ContextMenuCommandBuilder()
 		.setName("Encode Deck Image")
 		.setType(ApplicationCommandType.Message)
-		.setContexts(InteractionContextType.Guild, InteractionContextType.BotDM)
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
 };

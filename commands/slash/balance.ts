@@ -3,7 +3,7 @@ import { LogsHandler, UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
 import { now } from "@utils/time";
 import { currency } from "@utils/vars";
-import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand(true);
@@ -22,7 +22,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
     let guild = await interaction.client.guilds.fetch(interaction.guildId!);
     let member = await guild.members.fetch(interaction.user.id);
-    if (!member.roles.cache.has(ECONOMY_ROLE_ID) && !member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    if (!member.roles.cache.has(ECONOMY_ROLE_ID) && !member.permissions.has(PermissionFlagsBits.Administrator)) {
       let reply = Reply.error("You don't have the permission to do that little bro...").setContent("<@122686558422695938> LMAO LOOK AT THIS GUY!!!");
       return interaction.reply(reply.visible());
     }
@@ -59,36 +59,58 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("balance")
     .setDescription("Manage user coins")
-    .setDefaultMemberPermissions(PermissionsBitField.Flags.MentionEveryone)
-    .addSubcommand((sc) =>
-      sc
-        .setName("add")
-        .setDescription("(Admin) Add coins to a user")
-        .addUserOption((o) => o.setName("user").setDescription("User you want to add coins to").setRequired(true))
-        .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to add").setRequired(true))
-        .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))
-    )
-    .addSubcommand((sc) =>
-      sc
-        .setName("sub")
-        .setDescription("(Admin) Remove coins from a user")
-        .addUserOption((o) => o.setName("user").setDescription("User you want to remove coins from").setRequired(true))
-        .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to remove").setRequired(true))
-        .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))
-    )
-    .addSubcommand((sc) =>
-      sc
-        .setName("set")
-        .setDescription("(Admin) Set coins of a user")
-        .addUserOption((o) => o.setName("user").setDescription("User you want to set coins of").setRequired(true))
-        .addNumberOption((o) => o.setName("amount").setDescription("Amount of coins you want to set").setRequired(true))
-        .addStringOption((o) => o.setName("reason").setDescription("A short reason for this action").setRequired(false))
-    )
-    .addSubcommand((sc) =>
-      sc
-        .setName("check")
-        .setDescription("Check how many coins a user has")
-        .addUserOption((o) => o.setName("user").setDescription("User you want to check coins of").setRequired(true))
-    )
-
+    .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone)
+    .setContexts([InteractionContextType.Guild])
+    .addSubcommand((sc) => sc
+      .setName("add")
+      .setDescription("(Admin) Add coins to a user")
+      .addUserOption((o) => o
+        .setName("user")
+        .setDescription("User you want to add coins to")
+        .setRequired(true))
+      .addNumberOption((o) => o
+        .setName("amount")
+        .setDescription("Amount of coins you want to add")
+        .setRequired(true))
+      .addStringOption((o) => o
+        .setName("reason")
+        .setDescription("A short reason for this action")
+        .setRequired(false)))
+    .addSubcommand((sc) => sc
+      .setName("sub")
+      .setDescription("(Admin) Remove coins from a user")
+      .addUserOption((o) => o
+        .setName("user")
+        .setDescription("User you want to remove coins from")
+        .setRequired(true))
+      .addNumberOption((o) => o
+        .setName("amount")
+        .setDescription("Amount of coins you want to remove")
+        .setRequired(true))
+      .addStringOption((o) => o
+        .setName("reason")
+        .setDescription("A short reason for this action")
+        .setRequired(false)))
+    .addSubcommand((sc) => sc
+      .setName("set")
+      .setDescription("(Admin) Set coins of a user")
+      .addUserOption((o) => o
+        .setName("user")
+        .setDescription("User you want to set coins of")
+        .setRequired(true))
+      .addNumberOption((o) => o
+        .setName("amount")
+        .setDescription("Amount of coins you want to set")
+        .setRequired(true))
+      .addStringOption((o) => o
+        .setName("reason")
+        .setDescription("A short reason for this action")
+        .setRequired(false)))
+    .addSubcommand((sc) => sc
+      .setName("check")
+      .setDescription("Check how many coins a user has")
+      .addUserOption((o) => o
+        .setName("user")
+        .setDescription("User you want to check coins of")
+        .setRequired(true)))
 };

@@ -89,26 +89,40 @@ module.exports = {
     .setName("registry")
     .setDescription("Manage user registries")
     .setDefaultMemberPermissions(PermissionFlagsBits.MentionEveryone)
-    .setContexts(InteractionContextType.Guild)
-    .addSubcommand((sc) =>
-      sc
-        .setName("check")
-        .setDescription("Check a user's registry")
-        .addUserOption((o) => o.setName("user").setDescription("User you want to check").setRequired(true))
-    )
-    .addSubcommand((sc) =>
-      sc
-        .setName("who")
-        .setDescription("Check whom a registry belongs to")
-        .addStringOption((o) => o.setName("name").setDescription("Name of the registry").setAutocomplete(true).setRequired(true))
-        .addStringOption((o) => o.setName("value").setDescription("Value of the registry").setRequired(true)),
-    )
-    .addSubcommand((sc) =>
-      sc
-        .setName("edit")
-        .setDescription("(Admin) Edit a user's registry")
-        .addUserOption((o) => o.setName("user").setDescription("User you want to edit").setRequired(true))
-        .addStringOption((o) => o.setName("name").setDescription("Name of the registry").setAutocomplete(true).setRequired(true))
-        .addStringOption((o) => o.setName("value").setDescription("Value of the registry").setRequired(true)),
-    )
+    .setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+    .addSubcommand((sc) => sc
+      .setName("check")
+      .setDescription("Check a user's registry")
+      .addUserOption((o) => o
+        .setName("user").
+        setDescription("User you want to check")
+        .setRequired(true)))
+    .addSubcommand((sc) => sc
+      .setName("who")
+      .setDescription("Check whom a registry belongs to")
+      .addStringOption((o) => o
+        .setName("name")
+        .setDescription("Name of the registry")
+        .setAutocomplete(true)
+        .setRequired(true))
+      .addStringOption((o) => o
+        .setName("value")
+        .setDescription("Value of the registry")
+        .setRequired(true)))
+    .addSubcommand((sc) => sc
+      .setName("edit")
+      .setDescription("(Admin) Edit a user's registry")
+      .addUserOption((o) => o
+        .setName("user")
+        .setDescription("User you want to edit")
+        .setRequired(true))
+      .addStringOption((o) => o
+        .setName("name")
+        .setDescription("Name of the registry")
+        .setAutocomplete(true)
+        .setRequired(true))
+      .addStringOption((o) => o
+        .setName("value")
+        .setDescription("Value of the registry")
+        .setRequired(true)))
 };

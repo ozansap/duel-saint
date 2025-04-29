@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { GUILD_ID } from "@config";
 import { UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
@@ -41,25 +41,32 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("pardon")
 		.setDescription("Pardon a player")
-		.setDefaultMemberPermissions(8)
-		.setDMPermission(false)
-		.addSubcommand((sc) =>
-			sc
-				.setName("ban")
-				.setDescription("Pardon a player's current ban")
-				.addUserOption((o) => o.setName("player").setDescription("The player to pardon").setRequired(true))
-		)
-		.addSubcommand((sc) =>
-			sc
-				.setName("tag")
-				.setDescription("Pardon a player's current tag")
-				.addUserOption((o) => o.setName("player").setDescription("The player to pardon").setRequired(true))
-		)
-		.addSubcommand((sc) =>
-			sc
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+		.addSubcommand((sc) => sc
+			.setName("ban")
+			.setDescription("Pardon a player's current ban")
+			.addUserOption((o) => o
+				.setName("player")
+				.setDescription("The player to pardon")
+				.setRequired(true)))
+		.addSubcommand((sc) => sc
+			.setName("tag")
+			.setDescription("Pardon a player's current tag")
+			.addUserOption((o) => o
+				.setName("player")
+				.setDescription("The player to pardon")
+				.setRequired(true)))
+		.addSubcommand((sc) => sc
+			.setName("offense")
+			.setDescription("Pardon a player's past offense")
+			.addUserOption((o) => o
+				.setName("player")
+				.setDescription("The player to pardon")
+				.setRequired(true))
+			.addNumberOption((o) => o
 				.setName("offense")
-				.setDescription("Pardon a player's past offense")
-				.addUserOption((o) => o.setName("player").setDescription("The player to pardon").setRequired(true))
-				.addNumberOption((o) => o.setName("offense").setDescription("ID of the offense").setRequired(true))
+				.setDescription("ID of the offense")
+				.setRequired(true))
 		),
 };

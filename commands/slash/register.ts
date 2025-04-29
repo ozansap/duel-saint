@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { AutocompleteInteraction, ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { Shop } from "@utils/shop";
 import { UserHandler } from "@utils/db";
@@ -47,6 +47,14 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("register")
     .setDescription("Register account information")
-    .addStringOption((o) => o.setName("name").setDescription("Name of the information you want to register").setAutocomplete(true).setRequired(true))
-    .addStringOption((o) => o.setName("value").setDescription("Value of the information").setRequired(true)),
+    .setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+    .addStringOption((o) => o
+      .setName("name")
+      .setDescription("Name of the information you want to register")
+      .setAutocomplete(true)
+      .setRequired(true))
+    .addStringOption((o) => o
+      .setName("value")
+      .setDescription("Value of the information")
+      .setRequired(true))
 };

@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
@@ -23,5 +23,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 module.exports = {
 	execute,
-	data: new SlashCommandBuilder().setName("howto").setDescription("Learn how ranked duels work"),
+	data: new SlashCommandBuilder()
+		.setName("howto")
+		.setDescription("Learn how ranked duels work")
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
 };

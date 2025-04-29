@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
+import { ChatInputCommandInteraction, ComponentType, InteractionContextType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
 import { UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
 
@@ -80,5 +80,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 module.exports = {
 	execute,
-	data: new SlashCommandBuilder().setName("settings").setDescription("Set your profile privacy settings"),
+	data: new SlashCommandBuilder()
+		.setName("settings")
+		.setDescription("Set your profile privacy settings")
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
 };

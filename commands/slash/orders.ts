@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
 import { OrderHandler } from "@utils/db";
 
@@ -20,4 +20,5 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("orders")
     .setDescription("See your pending orders")
+    .setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
 };

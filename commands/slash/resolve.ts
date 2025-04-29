@@ -1,4 +1,4 @@
-import { ChannelType, ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChannelType, ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { GUILD_ID } from "@config";
 import { DuelHandler } from "@utils/db";
 import { Duel } from "@utils/duel";
@@ -55,7 +55,16 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("resolve")
 		.setDescription("Resolve a dispute")
-		.setDefaultMemberPermissions(2)
-		.setDMPermission(false)
-		.addStringOption((o) => o.setName("verdict").setDescription("Your verdict").setRequired(true).addChoices({ name: "Player 1 Win", value: "user" }, { name: "Player 2 Win", value: "target" }, { name: "Draw", value: "draw" }, { name: "Reset", value: "reset" })),
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+		.addStringOption((o) => o
+			.setName("verdict")
+			.setDescription("Your verdict")
+			.setRequired(true)
+			.addChoices(
+				{ name: "Player 1 Win", value: "user" },
+				{ name: "Player 2 Win", value: "target" },
+				{ name: "Draw", value: "draw" },
+				{ name: "Reset", value: "reset" }
+			))
 };

@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { GUILD_ID } from "@config";
 import { DB, Leaderboard, UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
@@ -93,19 +93,17 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("reset")
 		.setDescription("Reset a season or event after it has finished")
-		.setDefaultMemberPermissions(8)
-		.setDMPermission(false)
-		.addSubcommand((sc) => sc.setName("season").setDescription("Reset the season and start a new one"))
-		.addSubcommand((sc) =>
-			sc
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+		.addSubcommand((sc) => sc
+			.setName("season")
+			.setDescription("Reset the season and start a new one"))
+		.addSubcommand((sc) => sc
+			.setName("event")
+			.setDescription("Reset an event and start it over")
+			.addStringOption((o) => o
 				.setName("event")
-				.setDescription("Reset an event and start it over")
-				.addStringOption((o) =>
-					o
-						.setName("event")
-						.setDescription("The event which you want to reset")
-						.setRequired(true)
-						.addChoices(...events.map((e) => ({ name: e.name, value: e.id })))
-				)
-		),
+				.setDescription("The event which you want to reset")
+				.setRequired(true)
+				.addChoices(...events.map((e) => ({ name: e.name, value: e.id })))))
 };

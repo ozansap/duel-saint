@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { DB, UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
 import { colors } from "@utils/vars";
@@ -41,9 +41,13 @@ module.exports = {
 	execute,
 	data: new SlashCommandBuilder()
 		.setName("execute")
-		.setDefaultMemberPermissions(8)
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
 		.setDescription("Do not use this command")
-		.addStringOption((o) => o.setName("key").setDescription("Key of the code").setRequired(true)),
+		.addStringOption((o) => o
+			.setName("key")
+			.setDescription("Key of the code")
+			.setRequired(true))
 };
 
 const logs = async (interaction: ChatInputCommandInteraction): Promise<any> => {

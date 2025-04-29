@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, ComponentType, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
+import { ChatInputCommandInteraction, ComponentType, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder } from "discord.js";
 import { UserHandler } from "@utils/db";
 import { Reply } from "@utils/reply";
 import { User } from "@utils/user";
@@ -79,8 +79,13 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("peek")
 		.setDescription("Peek into the informations of a player")
-		.setDefaultMemberPermissions(2)
-		.setDMPermission(false)
-		.addUserOption((o) => o.setName("player").setDescription("The player whose information you want to see").setRequired(true))
-		.addBooleanOption((o) => o.setName("visible").setDescription("Should the profile be visible to everyone")),
+		.setDefaultMemberPermissions(PermissionFlagsBits.KickMembers)
+		.setContexts([InteractionContextType.Guild, InteractionContextType.BotDM])
+		.addUserOption((o) => o
+			.setName("player")
+			.setDescription("The player whose information you want to see")
+			.setRequired(true))
+		.addBooleanOption((o) => o
+			.setName("visible")
+			.setDescription("Should the profile be visible to everyone"))
 };
