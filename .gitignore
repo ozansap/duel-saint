@@ -3,3 +3,6 @@ build/
 .env
 .vscode
 .DS_Store
+
+cards.json
+cards/

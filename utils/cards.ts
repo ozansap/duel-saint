@@ -7,10 +7,17 @@ export class Cards {
   static actions: Card[];
 
   static refresh() {
-    Cards.parsed = JSON.parse(fs.readFileSync("cards.json", "utf-8"));
-    Cards.codes = Cards.parsed.codes;
-    Cards.characters = Cards.codes.filter((c: Card) => c.type === "character");
-    Cards.actions = Cards.codes.filter((c: Card) => c.type === "action").sort((a, b) => a.id - b.id);
+    try {
+      Cards.parsed = JSON.parse(fs.readFileSync("cards.json", "utf-8"));
+      Cards.codes = Cards.parsed.codes;
+      Cards.characters = Cards.codes.filter((c: Card) => c.type === "character");
+      Cards.actions = Cards.codes.filter((c: Card) => c.type === "action").sort((a, b) => a.id - b.id);
+    } catch (error) {
+      Cards.parsed = {};
+      Cards.codes = [];
+      Cards.characters = [];
+      Cards.actions = [];
+    }
   }
 }
 

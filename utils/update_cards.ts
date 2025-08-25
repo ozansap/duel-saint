@@ -59,7 +59,17 @@ const requests = [
 ];
 
 export async function update_cards(): Promise<Maybe<{ length: number, message: string }>> {
-  let cardsJSON = JSON.parse(fs.readFileSync("cards.json", "utf-8"));
+  let cardsJSON;
+
+  try {
+    cardsJSON = JSON.parse(fs.readFileSync("cards.json", "utf-8"));
+  } catch (error) {
+    cardsJSON = {
+      characters: [],
+      actions: [],
+      codes: []
+    };
+  }
 
   let old_characters = cardsJSON.characters as API_Card[];
   let old_actions = cardsJSON.actions as API_Card[];
