@@ -93,8 +93,8 @@ export async function update_cards(): Promise<Maybe<{ length: number, message: s
 
 async function update_codes(characters: API_Card[], actions: API_Card[]): Promise<Maybe<Card[]>> {
   let codes: Card[] = [];
-  let remaining_characters = characters;
-  let remaining_actions = actions;
+  let remaining_characters = [...characters];
+  let remaining_actions = [...actions];
 
   while (codes.length < characters.length + actions.length) {
     let new_characters = remaining_characters.splice(0, 3);
@@ -148,7 +148,8 @@ async function update_codes(characters: API_Card[], actions: API_Card[]): Promis
     }
   }
 
-  return SuccessResult(codes);
+  let sorted = codes.sort((a, b) => a.code - b.code);
+  return SuccessResult(sorted);
 }
 
 async function update_images(cards: API_Card[]) {
