@@ -168,6 +168,7 @@ async function update_images(cards: API_Card[]) {
     let blob = await response.blob();
     let arrayBuffer = await blob.arrayBuffer();
     let buffer = Buffer.from(arrayBuffer);
+    fs.mkdirSync(path_dir_cards, { recursive: true });
     fs.writeFileSync(`${path_dir_cards}/${card.id}.png`, buffer);
   }
 }
