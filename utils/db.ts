@@ -335,7 +335,7 @@ export class UserHandler {
 	registrations_set(registrations: UserData["registrations"]): UserHandler {
 		this.stages.push({
 			$set: {
-				registrations: registrations,
+				registrations: { $literal: registrations },
 			},
 		});
 		return this;

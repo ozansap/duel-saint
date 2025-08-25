@@ -68,9 +68,41 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     let userData = await userHandler.fetch();
 
     let registrations = Object.assign({}, userData.registrations, { [tag.value]: value });
-    await userHandler.registrations_set(registrations).update(interaction.user.tag);
+    await userHandler.registrations_set(registrations).update(user.tag);
 
     let reply = Reply.success(`You registered **${tag.name}** as \`${value}\``);
+    interaction.reply(reply.visible());
+  } else if (subcommand === "remove") {
+    let guild = await interaction.client.guilds.fetch(interaction.guildId!);
+    let member = await guild.members.fetch(interaction.user.id);
+    if (!member.permissions.has(PermissionFlagsBits.Administrator)) {
+      let reply = Reply.error("You don't have the permission to do that");
+      return interaction.reply(reply.ephemeral());
+    }
+
+    let user = interaction.options.getUser("user", true);
+    let name = interaction.options.getString("name", true);
+
+    let tag = Shop.tags.filter((t) => t.type === "registry").find((i) => i.value === name);
+    if (!tag) {
+      let reply = Reply.error("There is no registry with that name");
+      return interaction.reply(reply.ephemeral());
+    }
+
+    let userHandler = new UserHandler(user.id);
+    let userData = await userHandler.fetch();
+
+    let registrations = userData.registrations;
+
+    if (registrations[tag.value] === undefined) {
+      let reply = Reply.error(`${user} does not have a registered **${tag.name}**`);
+      return interaction.reply(reply.ephemeral());
+    }
+
+    delete registrations[tag.value];
+    await userHandler.registrations_set(registrations).update(user.tag);
+
+    let reply = Reply.success(`You unregistered **${tag.name}** of ${user}`);
     interaction.reply(reply.visible());
   }
 }
@@ -124,5 +156,17 @@ module.exports = {
       .addStringOption((o) => o
         .setName("value")
         .setDescription("Value of the registry")
+        .setRequired(true)))
+    .addSubcommand((sc) => sc
+      .setName("remove")
+      .setDescription("(Admin) Remove a user's registry")
+      .addUserOption((o) => o
+        .setName("user")
+        .setDescription("User you want to edit")
+        .setRequired(true))
+      .addStringOption((o) => o
+        .setName("name")
+        .setDescription("Name of the registry")
+        .setAutocomplete(true)
         .setRequired(true)))
 };
