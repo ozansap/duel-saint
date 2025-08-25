@@ -4,7 +4,7 @@
 	"description": "a discord bot",
 	"main": "app.ts",
 	"scripts": {
-		"start": "tsx app.ts",
+		"dev": "tsx app.ts",
 		"serve": "pm2 start 'tsx app.ts' --name duel-saint"
 	},
 	"keywords": [],
