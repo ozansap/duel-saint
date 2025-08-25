@@ -1,66 +1,104 @@
 import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
-import { decode, encode, fromImage, toImage, toText } from "@utils/code";
+import { decode, encode, encode_api, fromImage, toImage, toText } from "@utils/code";
+
+async function old_encode(interaction: ChatInputCommandInteraction) {
+	const attachment = interaction.options.getAttachment("deck_image", true);
+
+	if (attachment.width !== 1200 || attachment.height !== 1630) {
+		const reply = Reply.error("Your image has the wrong dimensions");
+		return interaction.reply(reply.ephemeral());
+	}
+
+	await interaction.deferReply();
+
+	let fromImage_result = await fromImage(attachment.url);
+	if (fromImage_result.error) {
+		const reply = Reply.error(fromImage_result.error.message);
+		return interaction.editReply(reply.visible());
+	}
+
+	let deck = fromImage_result.data;
+	let code = encode(deck);
+
+	let toText_result = toText(deck);
+	if (toText_result.error) {
+		const reply = Reply.error(toText_result.error.message);
+		return interaction.editReply(reply.visible());
+	}
+
+	let lines = toText_result.data.split("\n");
+	let title = lines.shift()!;
+	let description = lines.join("\n");
+	description += "\n\n⚠️ The deck code may not work, press `Next` until you get a working one";
+
+	let b_offset = new ButtonBuilder().setLabel("Next").setStyle(ButtonStyle.Secondary).setCustomId("offset_next");
+	let b_code = new ButtonBuilder().setLabel("See Code").setStyle(ButtonStyle.Secondary).setCustomId("see_code");
+
+	let reply = new Reply({ title, description, footer: { text: code } });
+	let message = await interaction.editReply(reply.addComponents([b_offset, b_code]).visible());
+
+	const collector = message.createMessageComponentCollector({
+		componentType: ComponentType.Button,
+		time: 300000,
+	});
+
+	let offset = 0;
+	collector.on("collect", async (i) => {
+		if (i.customId === "see_code") {
+			let reply = new Reply().setContent(code);
+			i.reply(reply.ephemeral());
+		} else if (i.customId === "offset_next") {
+			code = encode(deck, ++offset);
+			i.update(new Reply({ title, description, footer: { text: code } }).addComponents([b_offset, b_code]).visible());
+		}
+	});
+
+	collector.on("end", (collected) => {
+		interaction.editReply(new Reply().removeComponents().visible());
+	});
+
+}
+
+async function new_encode(interaction: ChatInputCommandInteraction) {
+	const attachment = interaction.options.getAttachment("deck_image", true);
+
+	if (attachment.width !== 1200 || attachment.height !== 1630) {
+		const reply = Reply.error("Your image has the wrong dimensions");
+		return interaction.reply(reply.ephemeral());
+	}
+
+	await interaction.deferReply();
+
+	let fromImage_result = await fromImage(attachment.url);
+	if (fromImage_result.error) {
+		const reply = Reply.error(fromImage_result.error.message);
+		return interaction.editReply(reply.visible());
+	}
+
+	let deck = fromImage_result.data;
+	let code = await encode_api(deck);
+
+	let toText_result = toText(deck);
+	if (toText_result.error) {
+		const reply = Reply.error(toText_result.error.message);
+		return interaction.editReply(reply.visible());
+	}
+
+	let lines = toText_result.data.split("\n");
+	let title = lines.shift()!;
+	let description = lines.join("\n");
+
+	let reply = new Reply({ title, description, footer: { text: code } });
+	await interaction.editReply(reply.visible());
+}
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
 	const subcommand = interaction.options.getSubcommand(true);
 
 	if (subcommand === "encode") {
-		const attachment = interaction.options.getAttachment("deck_image", true);
-
-		if (attachment.width !== 1200 || attachment.height !== 1630) {
-			const reply = Reply.error("Your image has the wrong dimensions");
-			return interaction.reply(reply.ephemeral());
-		}
-
-		await interaction.deferReply();
-
-		let fromImage_result = await fromImage(attachment.url);
-		if (fromImage_result.error) {
-			const reply = Reply.error(fromImage_result.error.message);
-			return interaction.editReply(reply.visible());
-		}
-
-		let deck = fromImage_result.data;
-		let code = encode(deck);
-
-		let toText_result = toText(deck);
-		if (toText_result.error) {
-			const reply = Reply.error(toText_result.error.message);
-			return interaction.editReply(reply.visible());
-		}
-
-		let lines = toText_result.data.split("\n");
-		let title = lines.shift()!;
-		let description = lines.join("\n");
-		description += "\n\n⚠️ The deck code may not work, press `Next` until you get a working one";
-
-		let b_offset = new ButtonBuilder().setLabel("Next").setStyle(ButtonStyle.Secondary).setCustomId("offset_next");
-		let b_code = new ButtonBuilder().setLabel("See Code").setStyle(ButtonStyle.Secondary).setCustomId("see_code");
-
-		let reply = new Reply({ title, description, footer: { text: code } });
-		let message = await interaction.editReply(reply.addComponents([b_offset, b_code]).visible());
-
-		const collector = message.createMessageComponentCollector({
-			componentType: ComponentType.Button,
-			time: 300000,
-		});
-
-		let offset = 0;
-		collector.on("collect", async (i) => {
-			if (i.customId === "see_code") {
-				let reply = new Reply().setContent(code);
-				i.reply(reply.ephemeral());
-			} else if (i.customId === "offset_next") {
-				code = encode(deck, ++offset);
-				i.update(new Reply({ title, description, footer: { text: code } }).addComponents([b_offset, b_code]).visible());
-			}
-		});
-
-		collector.on("end", (collected) => {
-			interaction.editReply(new Reply().removeComponents().visible());
-		});
-
+		await new_encode(interaction);
+		// await old_encode(interaction);
 	} else if (subcommand === "decode") {
 		let code = interaction.options.getString("deck_code", true);
 

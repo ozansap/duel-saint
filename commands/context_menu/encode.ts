@@ -1,8 +1,8 @@
 import { ApplicationCommandType, ButtonBuilder, ButtonStyle, ComponentType, ContextMenuCommandBuilder, InteractionContextType, MessageContextMenuCommandInteraction } from "discord.js";
 import { Reply } from "@utils/reply";
-import { encode, fromImage, toText } from "@utils/code";
+import { encode, encode_api, fromImage, toText } from "@utils/code";
 
-const execute = async (interaction: MessageContextMenuCommandInteraction) => {
+async function old_encode(interaction: MessageContextMenuCommandInteraction) {
 	let attachment = interaction.targetMessage.attachments.first();
 
 	if (!attachment || attachment.width === null) {
@@ -62,6 +62,48 @@ const execute = async (interaction: MessageContextMenuCommandInteraction) => {
 	collector.on("end", (collected) => {
 		interaction.editReply(new Reply().removeComponents().visible());
 	});
+}
+
+async function new_encode(interaction: MessageContextMenuCommandInteraction) {
+	let attachment = interaction.targetMessage.attachments.first();
+
+	if (!attachment || attachment.width === null) {
+		const reply = Reply.error("Message has no image");
+		return interaction.reply(reply.ephemeral());
+	}
+
+	if (attachment.width !== 1200 || attachment.height !== 1630) {
+		const reply = Reply.error("Your image has the wrong dimensions");
+		return interaction.reply(reply.ephemeral());
+	}
+
+	await interaction.deferReply();
+
+	let fromImage_result = await fromImage(attachment.url);
+	if (fromImage_result.error) {
+		const reply = Reply.error(fromImage_result.error.message);
+		return interaction.editReply(reply.visible());
+	}
+
+	let deck = fromImage_result.data;
+	let code = await encode_api(deck);
+
+	let toText_result = toText(deck);
+	if (toText_result.error) {
+		const reply = Reply.error(toText_result.error.message);
+		return interaction.editReply(reply.visible());
+	}
+
+	let lines = toText_result.data.split("\n");
+	let title = lines.shift()!;
+	let description = lines.join("\n");
+
+	let reply = new Reply({ title, description, footer: { text: code } });
+	await interaction.editReply(reply.visible());
+}
+
+const execute = async (interaction: MessageContextMenuCommandInteraction) => {
+	await new_encode(interaction);
 };
 
 module.exports = {

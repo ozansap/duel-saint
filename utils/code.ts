@@ -108,6 +108,29 @@ export function encode(deck: number[], offset: number = 0): string {
 	return code;
 }
 
+export async function encode_api(deck: number[]): Promise<string> {
+	const api_code = 'https://sg-public-api.hoyolab.com/event/cardsquare/encode_card_code?lang=en-us';
+
+	let body = {
+		role_cards: deck.slice(0, 3).map(code => Cards.characters.find(c => c.code === code)?.id),
+		action_cards: deck.slice(3).map(code => Cards.actions.find(c => c.code === code)?.id),
+	}
+
+	let options = {
+		method: 'POST',
+		body: JSON.stringify(body),
+	}
+
+	try {
+		let response = await fetch(api_code, options);
+		let json = await response.json() as any;
+		let code = json.data.code;
+		return code;
+	} catch (error) {
+		return "ERROR";
+	}
+}
+
 export function decode(code: string): Maybe<number[]> {
 	let buffer = Buffer.from(code, 'base64');
 	let hex_code = buffer.toString('hex');
