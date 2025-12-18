@@ -160,8 +160,9 @@ const autocomplete = async (interaction: AutocompleteInteraction) => {
   if (focused.name === "item") {
     let choices = Shop.items.map((item) => item.name);
     let filtered = choices.filter(choice => choice.toLowerCase().includes(focused.value.toLowerCase()));
+    let sliced = filtered.slice(0, 25);
     await interaction.respond(
-      filtered.map(choice => ({ name: choice, value: choice })),
+      sliced.map(choice => ({ name: choice, value: choice })),
     );
   } else if (focused.name === "filter") {
     let choices = Shop.tags.filter((tag) => tag.type === "filter");
@@ -193,7 +194,7 @@ module.exports = {
       .setDescription("Buy an item from the shop")
       .addStringOption((o) => o
         .setName("item")
-        .setDescription("Name of the item you want to buy")
+        .setDescription("Name of the item you want to buy (only some are shown, start typing to filter)")
         .setAutocomplete(true)
         .setRequired(true)))
 };
