@@ -194,7 +194,7 @@ module.exports = {
       .setDescription("Buy an item from the shop")
       .addStringOption((o) => o
         .setName("item")
-        .setDescription("Name of the item you want to buy (only some are shown, start typing to filter)")
+        .setDescription("Start typing to filter, only some are shown in the list. '/shop list' to see all items.")
         .setAutocomplete(true)
         .setRequired(true)))
 };
