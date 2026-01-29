@@ -154,7 +154,7 @@ export function decode(code: string): Maybe<number[]> {
 	if (unscrambled.length !== 33) return ErrorResult("This is not a valid deck code");
 
 	let deck = unscrambled.map(s => parseInt(s, 16));
-	return SuccessResult(deck);
+	return SuccessResult(deck.sort((a, b) => a - b));
 }
 
 export async function fromImage(url: string): Promise<Maybe<number[]>> {
