@@ -3,60 +3,47 @@ import { Card, Cards } from "@utils/cards";
 import { decode } from "@utils/code";
 import { ErrorResult, Maybe, SuccessResult } from "@utils/types";
 
-const api_cards = 'https://sg-hk4e-api-static.hoyoverse.com/event/e20221207cardlanding/v2/card_config?lang=en-us';
-const api_code = 'https://sg-public-api.hoyolab.com/event/cardsquare/encode_card_code?lang=en-us';
 const path_dir_cards = './cards';
+const api_code = 'https://sg-public-api.hoyolab.com/event/cardsquare/encode_card_code?lang=en-us';
+const api_cards = {
+  characters: 'https://sg-public-api.hoyolab.com/event/cardsquare/roles?lang=en-us',
+  actions: 'https://sg-public-api.hoyolab.com/event/cardsquare/actions?lang=en-us'
+};
 
 const requests = [
   {
-    type: 'characters',
-    data: 'role_card_infos',
-    options: {
-      method: 'POST',
-      headers: {
-        authority: 'sg-hk4e-api-static.hoyoverse.com',
-        accept: 'application/json, text/plain, */*',
-        'accept-language': 'en,de;q=0.9',
-        'content-type': 'application/json',
-        origin: 'https://act.hoyoverse.com',
-        referer: 'https://act.hoyoverse.com/',
-        'sec-ch-ua': 'Google Chrome";v="111", "Not(A:Brand";v="8", "Chromium";v="111',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': 'Windows',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-site',
-        'sec-gpc': '1',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
-      },
-      body: '{"page":1,"page_size":1000,"card_type":0,"role_search":{"element_type":"","weapon":"","belong":""},"action_search":{"action_card_type":"","cost_num":"","is_other_cost":false}}'
-    }
+    type: 'characters' as 'characters',
+    data: 'roles',
   },
   {
-    type: 'actions',
-    data: 'action_card_infos',
-    options: {
-      method: 'POST',
-      headers: {
-        authority: 'sg-hk4e-api-static.hoyoverse.com',
-        accept: 'application/json, text/plain, */*',
-        'accept-language': 'en,de;q=0.9',
-        'content-type': 'application/json',
-        origin: 'https://act.hoyoverse.com',
-        referer: 'https://act.hoyoverse.com/',
-        'sec-ch-ua': 'Google Chrome";v="111", "Not(A:Brand";v="8", "Chromium";v="111',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': 'Windows',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-site',
-        'sec-gpc': '1',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
-      },
-      body: '{"page":1,"page_size":1000,"card_type":1,"role_search":{"element_type":"","weapon":"","belong":""},"action_search":{"action_card_type":"","cost_num":"","is_other_cost":false}}'
-    }
+    type: 'actions' as 'actions',
+    data: 'actions',
   }
 ];
+
+function get_options(type: 'characters' | 'actions', cardsJSON: any) {
+  if (type === 'characters') {
+    return {
+      method: 'GET',
+    }
+  } else {
+    return {
+      method: 'POST',
+      body: JSON.stringify({
+        role_ids: cardsJSON.characters.map((c: API_Card) => c.id)
+      }),
+    }
+  }
+}
+
+function cleanup(json: any): API_Card[] {
+  return json.map((c: any) => ({
+    id: c.basic.item_id,
+    name: c.basic.name,
+    icon: c.basic.icon,
+    icon_small: c.basic.icon_small,
+  }));
+}
 
 export async function update_cards(): Promise<Maybe<{ length: number, message: string }>> {
   let cardsJSON;
@@ -76,9 +63,9 @@ export async function update_cards(): Promise<Maybe<{ length: number, message: s
 
   try {
     for (const req of requests) {
-      let response = await fetch(api_cards, req.options);
+      let response = await fetch(api_cards[req.type], get_options(req.type, cardsJSON));
       let json = await response.json() as any;
-      cardsJSON[req.type] = json.data[req.data];
+      cardsJSON[req.type] = cleanup(json.data[req.data]);
     }
   } catch (error) {
     console.error(error);
@@ -164,7 +151,7 @@ async function update_codes(characters: API_Card[], actions: API_Card[]): Promis
 
 async function update_images(cards: API_Card[]) {
   for (let card of cards) {
-    let response = await fetch(card.resource);
+    let response = await fetch(card.icon);
     let blob = await response.blob();
     let arrayBuffer = await blob.arrayBuffer();
     let buffer = Buffer.from(arrayBuffer);

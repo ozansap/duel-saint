@@ -1,6 +1,6 @@
 import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ComponentType, InteractionContextType, SlashCommandBuilder } from "discord.js";
 import { Reply } from "@utils/reply";
-import { decode, encode, encode_api, fromImage, toImage, toText } from "@utils/code";
+import { decode_sorted, encode, encode_api, fromImage, toImage, toText } from "@utils/code";
 
 async function old_encode(interaction: ChatInputCommandInteraction) {
 	const attachment = interaction.options.getAttachment("deck_image", true);
@@ -102,7 +102,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	} else if (subcommand === "decode") {
 		let code = interaction.options.getString("deck_code", true);
 
-		let decode_result = decode(code);
+		let decode_result = decode_sorted(code);
 		if (decode_result.error) {
 			const reply = Reply.error(decode_result.error.message);
 			return interaction.reply(reply.ephemeral());
@@ -125,7 +125,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 	} else if (subcommand === "image") {
 		let code = interaction.options.getString("deck_code", true);
 
-		let decode_result = decode(code);
+		let decode_result = decode_sorted(code);
 		if (decode_result.error) {
 			const reply = Reply.error(decode_result.error.message);
 			return interaction.reply(reply.visible());

@@ -154,6 +154,13 @@ export function decode(code: string): Maybe<number[]> {
 	if (unscrambled.length !== 33) return ErrorResult("This is not a valid deck code");
 
 	let deck = unscrambled.map(s => parseInt(s, 16));
+	return SuccessResult(deck);
+}
+
+export function decode_sorted(code: string): Maybe<number[]> {
+	let decode_result = decode(code);
+	if (decode_result.error) return decode_result;
+	let deck = decode_result.data;
 
 	for (let i = 0; i < deck.length; i++) {
 		let card = Cards.codes.find(c => c.code === deck[i]);
