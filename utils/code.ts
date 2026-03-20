@@ -227,7 +227,7 @@ export async function fromImage(url: string): Promise<Maybe<number[]>> {
 			let isFood = 333000 < card.id && card.id < 334000;
 
 			let threshold = 0.15;
-			if (isTalent) threshold = 0.16;
+			if (isTalent) threshold = 0.175;
 			else if (isSpecial) threshold = 0.3;
 
 			let r = ratio(diff, p.width, p.height);
