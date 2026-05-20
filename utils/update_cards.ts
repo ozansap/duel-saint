@@ -4,10 +4,10 @@ import { decode } from "@utils/code";
 import { ErrorResult, Maybe, SuccessResult } from "@utils/types";
 
 const path_dir_cards = './cards';
-const api_code = 'https://sg-public-api.hoyolab.com/event/cardsquare/encode_card_code?lang=en-us';
+const api_code = 'https://sg-act-public-api.hoyolab.com/event/cardsquare/encode_card_code?lang=en-us';
 const api_cards = {
-  characters: 'https://sg-public-api.hoyolab.com/event/cardsquare/roles?lang=en-us',
-  actions: 'https://sg-public-api.hoyolab.com/event/cardsquare/actions?lang=en-us'
+  characters: 'https://sg-act-public-api.hoyolab.com/event/cardsquare/roles?lang=en-us',
+  actions: 'https://sg-act-public-api.hoyolab.com/event/cardsquare/actions?lang=en-us'
 };
 
 const requests = [
