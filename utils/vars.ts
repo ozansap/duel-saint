@@ -34,8 +34,8 @@ export const ranks = [
 ];
 
 export const seasons = {
-	current: 7,
-	dates: [1672178400, 1677621600, 1681250400, 1684879200, 1688508000, 1692136800, 1695765600, 1699394400],
+	current: 8,
+	dates: [1672178400, 1677621600, 1681250400, 1684879200, 1688508000, 1692136800, 1695765600, 1699394400, 1764712800],
 	all: () => Array.from({ length: seasons.current }, (x, i) => i).splice(1, seasons.current),
 };
 
